@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>TagFlow</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      #loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #f3f4f6;
+      }
+      #loading.hidden {
+        display: none;
+      }
+      iframe {
+        width: 100%;
+        height: 100vh;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div>
+        <h1>TagFlow</h1>
+        <p>Starting backend server...</p>
+      </div>
+    </div>
+    <iframe id="app" style="display: none"></iframe>
+
+    <script src="main.js"></script>
+  </body>
+</html>

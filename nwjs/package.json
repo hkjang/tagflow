@@ -1,0 +1,14 @@
+{
+  "name": "@tagflow/nwjs",
+  "version": "1.0.0",
+  "description": "NW.js wrapper for TagFlow",
+  "main": "index.html",
+  "scripts": {
+    "dev": "nw .",
+    "build": "powershell -ExecutionPolicy Bypass -File package-app.ps1"
+  },
+  "devDependencies": {
+    "nw": "^0.83.0",
+    "nw-builder": "^4.7.2"
+  }
+}
