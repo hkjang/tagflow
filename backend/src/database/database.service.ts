@@ -5,7 +5,7 @@ import * as fs from 'fs';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private db: Database.Database;
+  private db!: Database.Database;
   private dbPath: string;
 
   constructor() {
@@ -39,7 +39,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       const stmt = this.db.prepare(sql);
       const results = stmt.all(...params) as T[];
       return results;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Database query error:', error);
       throw error;
     }
@@ -52,7 +52,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     try {
       const stmt = this.db.prepare(sql);
       return stmt.get(...params) as T | undefined;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Database query error:', error);
       throw error;
     }
@@ -65,7 +65,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     try {
       const stmt = this.db.prepare(sql);
       return stmt.run(...params);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Database exec error:', error);
       throw error;
     }

@@ -35,7 +35,7 @@ export class WebhooksController {
   async getWebhook(@Param('id') id: string) {
     try {
       return await this.webhooksService.getWebhookById(parseInt(id));
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException('Webhook not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -59,7 +59,7 @@ export class WebhooksController {
     try {
       await this.webhooksService.deleteWebhook(parseInt(id));
       return { message: 'Webhook deleted successfully' };
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException('Failed to delete webhook', HttpStatus.BAD_REQUEST);
     }
   }
@@ -121,7 +121,7 @@ export class WebhookMappingsController {
         body.from_key,
         body.to_key,
       );
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         'Failed to create mapping',
         HttpStatus.BAD_REQUEST,
@@ -140,7 +140,7 @@ export class WebhookMappingsController {
         body.from_key,
         body.to_key,
       );
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         'Failed to update mapping',
         HttpStatus.BAD_REQUEST,
@@ -153,7 +153,7 @@ export class WebhookMappingsController {
     try {
       await this.webhooksService.deleteMapping(parseInt(id));
       return { message: 'Mapping deleted successfully' };
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException('Failed to delete mapping', HttpStatus.BAD_REQUEST);
     }
   }

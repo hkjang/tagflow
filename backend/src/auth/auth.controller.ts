@@ -14,7 +14,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginRequest) {
     try {
       return await this.authService.login(loginDto);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         error.message || 'Login failed',
         HttpStatus.UNAUTHORIZED,
@@ -26,7 +26,7 @@ export class AuthController {
   async refresh(@Body('refresh_token') refreshToken: string) {
     try {
       return await this.authService.refreshToken(refreshToken);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         'Invalid refresh token',
         HttpStatus.UNAUTHORIZED,
@@ -63,7 +63,7 @@ export class UsersController {
         body.password,
         body.role,
       );
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         error.message || 'Failed to create user',
         HttpStatus.BAD_REQUEST,
@@ -79,7 +79,7 @@ export class UsersController {
   ) {
     try {
       return await this.authService.updateUser(parseInt(id), body);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         error.message || 'Failed to update user',
         HttpStatus.BAD_REQUEST,
@@ -93,7 +93,7 @@ export class UsersController {
     try {
       await this.authService.deleteUser(parseInt(id));
       return { message: 'User deleted successfully' };
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         'Failed to delete user',
         HttpStatus.BAD_REQUEST,

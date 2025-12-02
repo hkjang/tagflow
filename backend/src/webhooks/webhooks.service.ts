@@ -264,7 +264,7 @@ export class WebhooksService {
         'INSERT INTO webhook_retry_queue (webhook_id, payload, next_retry) VALUES (?, ?, datetime("now", "+1 minute"))',
         [webhookId, JSON.stringify(eventData)],
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add to retry queue:', error);
     }
   }
@@ -285,7 +285,7 @@ export class WebhooksService {
 
           // Success - remove from queue
           this.db.exec('DELETE FROM webhook_retry_queue WHERE id = ?', [item.id]);
-        } catch (error) {
+        } catch (error: any) {
           // Failed - increment retry count and schedule next retry
           const nextRetryMinutes = Math.pow(2, item.retry_count + 1); // Exponential backoff
           this.db.exec(
@@ -294,7 +294,7 @@ export class WebhooksService {
           );
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Retry queue processing failed:', error);
     }
   }

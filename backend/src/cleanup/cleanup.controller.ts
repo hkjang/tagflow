@@ -28,7 +28,7 @@ export class CleanupController {
   async manualCleanup(@CurrentUser() user: any) {
     try {
       return await this.cleanupService.manualCleanup(user.sub);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         error.message || 'Cleanup failed',
         HttpStatus.INTERNAL_SERVER_ERROR,

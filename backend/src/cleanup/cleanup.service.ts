@@ -43,8 +43,9 @@ export class CleanupService {
       );
 
       console.log(`Cleanup completed: ${totalDeleted} records deleted`);
+      if (!log) throw new Error('Failed to create cleanup log');
       return log;
-    } catch (error) {
+    } catch (error: any) {
       // Log cleanup failure
       this.db.exec(
         'INSERT INTO cleanup_fail_logs (admin_id, error_message, run_time) VALUES (?, ?, datetime("now"))',

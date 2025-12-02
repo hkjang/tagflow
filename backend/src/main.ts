@@ -24,14 +24,14 @@ async function bootstrap() {
   const dbService = app.get(DatabaseService);
   try {
     await dbService.runMigrations();
-    console.log('✓ Database migrations completed');
-  } catch (error) {
-    console.error('✗ Migration error:', error);
+    console.log('??Database migrations completed');
+  } catch (error: any) {
+    console.error('??Migration error:', error);
   }
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  console.log(`🚀 Backend server running on http://localhost:${port}`);
+  console.log(`?? Backend server running on http://localhost:${port}`);
 }
 
 bootstrap();

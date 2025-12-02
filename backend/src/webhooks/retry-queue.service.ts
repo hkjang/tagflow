@@ -11,7 +11,7 @@ export class RetryQueueService {
     console.log('Processing webhook retry queue...');
     try {
       await this.webhooksService.processRetryQueue();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Retry queue processing error:', error);
     }
   }

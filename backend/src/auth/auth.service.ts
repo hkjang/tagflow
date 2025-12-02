@@ -21,6 +21,10 @@ export class AuthService {
       return null;
     }
 
+    if (!user.password_hash) {
+      return null;
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     
     if (!isPasswordValid) {
@@ -56,7 +60,7 @@ export class AuthService {
       
       try {
         await cleanupService.cleanupOldData(user.id);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auto-cleanup failed on admin login:', error);
         // Don't fail the login if cleanup fails
       }
@@ -81,7 +85,7 @@ export class AuthService {
       return {
         access_token: this.jwtService.sign(newPayload),
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new Error('Invalid token');
     }
   }
@@ -103,6 +107,7 @@ export class AuthService {
       [result.lastInsertRowid],
     );
 
+    if (!user) throw new Error('Failed to create user');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash, ...userWithoutPassword } = user;
     return userWithoutPassword;
@@ -170,7 +175,9 @@ export class AuthService {
 
     this.db.exec(sql, params);
 
-    return await this.getUserById(id);
+    const updatedUser = await this.getUserById(id);
+    if (!updatedUser) throw new Error('Failed to update user');
+    return updatedUser;
   }
 
   async deleteUser(id: number): Promise<void> {
