@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  transpilePackages: ['@tagflow/shared'],
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,7 @@
-// Re-export shared types
-export type { User, LoginRequest, LoginResponse, TokenPayload } from '@shared/user';
-export { UserRole } from '@shared/user';
+import { User, LoginRequest, LoginResponse, TokenPayload, UserRole } from '../../../shared/src/user';
+
+export type { User, LoginRequest, LoginResponse, TokenPayload };
+export { UserRole };
 
 // Frontend-specific auth state
 export interface AuthState {

@@ -12,6 +12,12 @@ export default function HomePage() {
     router.push('/login');
   };
 
+  if (isAuthenticated && user) {
+    router.push('/dashboard');
+    return null; // or a loading spinner while redirecting
+  }
+
+
   if (isLoading) {
     return (
       <div style={{
@@ -70,63 +76,8 @@ export default function HomePage() {
           RFID Tag Management System
         </p>
 
-        {isAuthenticated && user ? (
-          <div style={{
-            padding: '2rem',
-            backgroundColor: 'white',
-            borderRadius: '0.75rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            marginBottom: '1rem',
-          }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#6b7280',
-                marginBottom: '0.5rem',
-              }}>
-                Logged in as
-              </p>
-              <p style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                color: '#1f2937',
-              }}>
-                {user.username}
-              </p>
-              <p style={{
-                display: 'inline-block',
-                marginTop: '0.5rem',
-                padding: '0.25rem 0.75rem',
-                fontSize: '0.75rem',
-                fontWeight: '500',
-                color: user.role === 'admin' ? '#991b1b' : '#065f46',
-                backgroundColor: user.role === 'admin' ? '#fee2e2' : '#d1fae5',
-                borderRadius: '9999px',
-              }}>
-                {user.role.toUpperCase()}
-              </p>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: '0.625rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: 'white',
-                backgroundColor: '#dc2626',
-                border: 'none',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                transition: 'background-color 0.15s',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-            >
-              Sign out
-            </button>
-          </div>
-        ) : (
+        {/* User is redirected, so we only show login prompt if NOT authenticated */
+        !isAuthenticated && (
           <div style={{
             padding: '2rem',
             backgroundColor: 'white',
