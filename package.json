@@ -1,7 +1,7 @@
 {
   "name": "tagflow",
   "version": "1.0.0",
-  "description": "RFID Tag Management System with Electron, NestJS, and Next.js",
+  "description": "RFID Tag Management System with NW.js, NestJS, and Next.js",
   "private": true,
   "workspaces": [
     "nwjs",

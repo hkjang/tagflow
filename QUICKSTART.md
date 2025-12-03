@@ -46,7 +46,7 @@ This starts:
 
 - Backend (NestJS) on http://localhost:3001
 - Frontend (Next.js) on http://localhost:3000
-- Electron window (after 5 seconds)
+- NW.js window (after 5 seconds)
 
 **OR run services separately:**
 
@@ -64,10 +64,10 @@ cd frontend
 npm run dev
 ```
 
-Terminal 3 - Electron (optional):
+Terminal 3 - NW.js (optional):
 
 ```powershell
-cd electron
+cd nwjs
 npm run build
 npm run dev
 ```
@@ -92,7 +92,7 @@ npm run dev
 tagflow/
 ├── backend/      # NestJS API (port 3001)
 ├── frontend/     # Next.js UI (port 3000)
-├── electron/     # Desktop app wrapper
+├── nwjs/         # Desktop app wrapper
 ├── shared/       # TypeScript types
 └── data/         # SQLite database (created on first run)
 ```
@@ -147,11 +147,11 @@ Base URL: http://localhost:3001
 
 ```powershell
 npm run build
-cd electron
-npm run package
+cd nwjs
+npm run build
 ```
 
-Installer will be in `electron/release/`
+Installer will be in `nwjs/dist/`
 
 ## Support
 

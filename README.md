@@ -1,6 +1,6 @@
 # TagFlow - RFID Tag Management System
 
-Electron-based desktop application for RFID tag event management with role-based access control.
+NW.js-based desktop application for RFID tag event management with role-based access control.
 
 ## Features
 
@@ -12,7 +12,7 @@ Electron-based desktop application for RFID tag event management with role-based
 
 ## Tech Stack
 
-- **Electron**: Desktop application framework
+- **NW.js**: Desktop application framework
 - **NestJS**: Backend REST API
 - **Next.js**: Frontend UI
 - **SQLite**: Local database
@@ -35,7 +35,7 @@ npm run seed
 ### Development
 
 ```bash
-# Start all services (backend, frontend, electron)
+# Start all services (backend, frontend, nwjs)
 npm run dev
 ```
 
@@ -43,7 +43,7 @@ The application will automatically:
 
 - Start NestJS backend on `http://localhost:3001`
 - Start Next.js frontend on `http://localhost:3000`
-- Open Electron window
+- Open NW.js window
 
 ### Default Credentials
 
@@ -74,7 +74,7 @@ The application will automatically:
 
 ```
 tagflow/
-├── electron/          # Electron main process
+├── nwjs/              # NW.js main process
 ├── backend/           # NestJS backend API
 ├── frontend/          # Next.js frontend
 ├── shared/            # Shared TypeScript types
@@ -103,8 +103,8 @@ tagflow/
 # Build for production
 npm run build
 
-# Package Electron app
-npm --workspace=electron run package
+# Package NW.js app
+npm --workspace=nwjs run build
 ```
 
 ## License

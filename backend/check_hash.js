@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 
 const password = 'admin123';
-const hash = '$2b$10$YQ98DpKaJWlY0kAmQCaveO7K7XqjW2WwY72JZ.RyGHJ8YnNVqhK4u';
+const hash = '$2b$10$HTpaXSAsLU7x.ckhvKF2o.jx9eV4g/caSeOVzpwcpkUhsVuMQvuwG';
 
 bcrypt.compare(password, hash).then(result => {
     console.log(`Password '${password}' matches hash: ${result}`);

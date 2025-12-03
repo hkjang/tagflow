@@ -8,7 +8,7 @@ async function bootstrap() {
 
   // Enable CORS for frontend
   app.enableCors({
-    origin: true, // Allow all origins for Electron app
+    origin: true, // Allow all origins for NW.js app
     credentials: true,
   });
 
