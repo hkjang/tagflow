@@ -25,8 +25,12 @@ async function bootstrap() {
   try {
     await dbService.runMigrations();
     console.log('??Database migrations completed');
+    
+    // Run seeds on startup to ensure admin user exists
+    await dbService.runSeeds();
+    console.log('??Database seeds completed');
   } catch (error: any) {
-    console.error('??Migration error:', error);
+    console.error('??Migration/Seed error:', error);
   }
 
   const port = process.env.PORT || 3001;

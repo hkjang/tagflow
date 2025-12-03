@@ -1,12 +1,14 @@
-import Database from 'better-sqlite3';
+// @ts-ignore - sql.js doesn't have types
+import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { join } from 'path';
 import * as fs from 'fs';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private db!: Database.Database;
+  private db!: SqlJsDatabase;
   private dbPath: string;
+  private SQL: any;
 
   constructor() {
     // Use data directory in project root
@@ -18,16 +20,36 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    this.db = new Database(this.dbPath);
-    // Enable WAL mode for better concurrency
-    this.db.pragma('journal_mode = WAL');
+    // Initialize sql.js
+    this.SQL = await initSqlJs();
+    
+    // Load existing database or create new one
+    if (fs.existsSync(this.dbPath)) {
+      const buffer = fs.readFileSync(this.dbPath);
+      this.db = new this.SQL.Database(buffer);
+    } else {
+      this.db = new this.SQL.Database();
+    }
+    
+    // Enable WAL mode for better concurrency (note: sql.js doesn't support WAL, but we keep for compatibility)
     console.log(`Database connected: ${this.dbPath}`);
   }
 
   async onModuleDestroy() {
     if (this.db) {
+      this.saveDatabase();
       this.db.close();
       console.log('Database connection closed');
+    }
+  }
+
+  /**
+   * Save database to file
+   */
+  private saveDatabase() {
+    if (this.db) {
+      const data = this.db.export();
+      fs.writeFileSync(this.dbPath, data);
     }
   }
 
@@ -37,7 +59,16 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   query<T = any>(sql: string, params: any[] = []): T[] {
     try {
       const stmt = this.db.prepare(sql);
-      const results = stmt.all(...params) as T[];
+      stmt.bind(params);
+      
+      const results: T[] = [];
+      while (stmt.step()) {
+        const row = stmt.getAsObject();
+        results.push(row as T);
+      }
+      stmt.free();
+      
+      this.saveDatabase();
       return results;
     } catch (error: any) {
       console.error('Database query error:', error);
@@ -50,8 +81,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    */
   queryOne<T = any>(sql: string, params: any[] = []): T | undefined {
     try {
-      const stmt = this.db.prepare(sql);
-      return stmt.get(...params) as T | undefined;
+      const results = this.query<T>(sql, params);
+      return results[0];
     } catch (error: any) {
       console.error('Database query error:', error);
       throw error;
@@ -61,10 +92,19 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   /**
    * Execute an insert/update/delete query
    */
-  exec(sql: string, params: any[] = []): Database.RunResult {
+  exec(sql: string, params: any[] = []): { changes: number; lastInsertRowid: number } {
     try {
-      const stmt = this.db.prepare(sql);
-      return stmt.run(...params);
+      this.db.run(sql, params);
+      this.saveDatabase();
+      
+      // Get changes and last insert rowid
+      const changes = this.db.getRowsModified();
+      const lastInsertRowid = this.queryOne<{ id: number }>('SELECT last_insert_rowid() as id')?.id || 0;
+      
+      return { 
+        changes,
+        lastInsertRowid
+      };
     } catch (error: any) {
       console.error('Database exec error:', error);
       throw error;
@@ -75,14 +115,22 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    * Execute multiple queries in a transaction
    */
   transaction<T>(callback: () => T): T {
-    const transaction = this.db.transaction(callback);
-    return transaction();
+    try {
+      this.db.run('BEGIN TRANSACTION');
+      const result = callback();
+      this.db.run('COMMIT');
+      this.saveDatabase();
+      return result;
+    } catch (error) {
+      this.db.run('ROLLBACK');
+      throw error;
+    }
   }
 
   /**
    * Get the underlying database instance
    */
-  getDatabase(): Database.Database {
+  getDatabase(): SqlJsDatabase {
     return this.db;
   }
 
@@ -107,9 +155,17 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     for (const file of migrationFiles) {
       const sql = fs.readFileSync(join(migrationsDir, file), 'utf-8');
       console.log(`Running migration: ${file}`);
-      this.db.exec(sql);
+      
+      // Split SQL by semicolon and execute each statement
+      const statements = sql.split(';').filter(s => s.trim());
+      for (const statement of statements) {
+        if (statement.trim()) {
+          this.db.run(statement);
+        }
+      }
     }
 
+    this.saveDatabase();
     console.log('All migrations completed');
   }
 
@@ -134,9 +190,17 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     for (const file of seedFiles) {
       const sql = fs.readFileSync(join(seedsDir, file), 'utf-8');
       console.log(`Running seed: ${file}`);
-      this.db.exec(sql);
+      
+      // Split SQL by semicolon and execute each statement
+      const statements = sql.split(';').filter(s => s.trim());
+      for (const statement of statements) {
+        if (statement.trim()) {
+          this.db.run(statement);
+        }
+      }
     }
 
+    this.saveDatabase();
     console.log('All seeds completed');
   }
 }

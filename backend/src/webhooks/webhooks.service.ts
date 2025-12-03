@@ -255,10 +255,6 @@ export class WebhooksService {
     // For simplicity, we'll store retry items in a separate table
     // In a production system, you might use a proper queue system
     try {
-      this.db.exec(
-        'CREATE TABLE IF NOT EXISTS webhook_retry_queue (id INTEGER PRIMARY KEY AUTOINCREMENT, webhook_id INTEGER, payload TEXT, retry_count INTEGER DEFAULT 0, next_retry DATETIME, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)',
-        [],
-      );
 
       this.db.exec(
         'INSERT INTO webhook_retry_queue (webhook_id, payload, next_retry) VALUES (?, ?, datetime("now", "+1 minute"))',
