@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreateWebhookDto, Webhook } from '../../../../services/webhook.service';
+import { CreateWebhookDto, Webhook, WebhookMapping, webhookService } from '../../../../services/webhook.service';
 
 interface WebhookFormProps {
     webhook: Webhook | null;
@@ -15,6 +15,9 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ webhook, onSubmit, onC
         headers: '',
         is_active: true,
     });
+    const [mappings, setMappings] = useState<WebhookMapping[]>([]);
+    const [newMapping, setNewMapping] = useState({ from_key: '', to_key: '' });
+    const [loadingMappings, setLoadingMappings] = useState(false);
 
     useEffect(() => {
         if (webhook) {
@@ -25,6 +28,7 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ webhook, onSubmit, onC
                 headers: webhook.headers ? JSON.stringify(webhook.headers, null, 2) : '',
                 is_active: webhook.is_active,
             });
+            fetchMappings(webhook.id);
         } else {
             setFormData({
                 name: '',
@@ -33,8 +37,44 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ webhook, onSubmit, onC
                 headers: '',
                 is_active: true,
             });
+            setMappings([]);
         }
     }, [webhook]);
+
+    const fetchMappings = async (webhookId: number) => {
+        try {
+            setLoadingMappings(true);
+            const data = await webhookService.getMappings(webhookId);
+            setMappings(data);
+        } catch (error) {
+            console.error('Failed to fetch mappings:', error);
+        } finally {
+            setLoadingMappings(false);
+        }
+    };
+
+    const handleAddMapping = async () => {
+        if (!webhook || !newMapping.from_key || !newMapping.to_key) return;
+
+        try {
+            await webhookService.createMapping(webhook.id, newMapping.from_key, newMapping.to_key);
+            setNewMapping({ from_key: '', to_key: '' });
+            fetchMappings(webhook.id);
+        } catch (error) {
+            alert('Failed to create mapping');
+        }
+    };
+
+    const handleDeleteMapping = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this mapping?')) return;
+
+        try {
+            await webhookService.deleteMapping(id);
+            if (webhook) fetchMappings(webhook.id);
+        } catch (error) {
+            alert('Failed to delete mapping');
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -172,7 +212,89 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ webhook, onSubmit, onC
                             <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Active</span>
                         </label>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+
+                    {/* Parameter Mappings Section */}
+                    {webhook && (
+                        <div style={{ marginBottom: '1.5rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
+                            <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Parameter Mappings</h3>
+                            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                                Map internal parameter keys to different keys for this webhook.
+                            </p>
+
+                            {loadingMappings ? (
+                                <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>Loading mappings...</p>
+                            ) : (
+                                <div style={{ marginBottom: '1rem' }}>
+                                    {mappings.length === 0 ? (
+                                        <p style={{ fontSize: '0.875rem', color: '#9ca3af', fontStyle: 'italic' }}>No mappings configured.</p>
+                                    ) : (
+                                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                                            {mappings.map(mapping => (
+                                                <li key={mapping.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', padding: '0.5rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
+                                                    <span style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                                                        {mapping.from_key} <span style={{ color: '#9ca3af' }}>→</span> {mapping.to_key}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteMapping(mapping.id)}
+                                                        style={{ color: '#dc2626', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <select
+                                    value={newMapping.from_key}
+                                    onChange={(e) => setNewMapping({ ...newMapping, from_key: e.target.value })}
+                                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
+                                >
+                                    <option value="" disabled>Select From Key</option>
+                                    <option value="card_uid">card_uid</option>
+                                    <option value="event_time">event_time</option>
+                                    <option value="source_ip">source_ip</option>
+                                    <option value="system_name">system_name</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    placeholder="To Key (e.g. tag_id)"
+                                    value={newMapping.to_key}
+                                    onChange={(e) => setNewMapping({ ...newMapping, to_key: e.target.value })}
+                                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAddMapping}
+                                    disabled={!newMapping.from_key || !newMapping.to_key}
+                                    style={{
+                                        padding: '0.5rem 1rem',
+                                        backgroundColor: '#10b981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '0.375rem',
+                                        cursor: 'pointer',
+                                        opacity: (!newMapping.from_key || !newMapping.to_key) ? 0.5 : 1
+                                    }}
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {!webhook && (
+                        <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f3f4f6', borderRadius: '0.375rem' }}>
+                            <p style={{ fontSize: '0.875rem', color: '#6b7280', textAlign: 'center' }}>
+                                Save the webhook first to configure parameter mappings.
+                            </p>
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
                         <button
                             type="button"
                             onClick={onCancel}
