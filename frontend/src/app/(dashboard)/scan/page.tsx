@@ -58,6 +58,7 @@ export default function ScanPage() {
         try {
             const response = await apiClient.post('/events/manual', {
                 card_uid: uid,
+                event_time: new Date().toISOString(), // Send browser timestamp
             });
 
             setMessage({

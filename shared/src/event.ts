@@ -10,7 +10,9 @@ export interface TagEvent {
 export interface CreateTagEventDto {
   card_uid: string;
   source_ip?: string;
+  event_time?: string; // ISO 8601 format from client
 }
+
 
 export interface TagEventFilter {
   startDate?: Date;

@@ -15,11 +15,22 @@ export class EventsService {
 
     while (retries > 0) {
       try {
-        console.log('Creating event with:', { card_uid: dto.card_uid, ip });
-        const result = this.db.exec(
-          'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag) VALUES (?, CURRENT_TIMESTAMP, ?, 0)',
-          [dto.card_uid, ip],
-        );
+        console.log('Creating event with:', { card_uid: dto.card_uid, ip, event_time: dto.event_time });
+
+        let sql: string;
+        let params: any[];
+
+        if (dto.event_time) {
+          // Use client-provided timestamp
+          sql = 'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag) VALUES (?, ?, ?, 0)';
+          params = [dto.card_uid, dto.event_time, ip];
+        } else {
+          // Fallback to server timestamp for backward compatibility
+          sql = 'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag) VALUES (?, CURRENT_TIMESTAMP, ?, 0)';
+          params = [dto.card_uid, ip];
+        }
+
+        const result = this.db.exec(sql, params);
 
         console.log('Insert result:', result);
         console.log('Last insert rowid:', result.lastInsertRowid);
