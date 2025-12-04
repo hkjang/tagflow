@@ -2,12 +2,32 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { TagEvent, CreateTagEventDto } from '@shared/event';
 
+import { SettingsService } from '../settings/settings.service';
+
 @Injectable()
 export class EventsService {
-  constructor(private readonly db: DatabaseService) { }
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly settingsService: SettingsService,
+  ) { }
 
-  async createEvent(dto: CreateTagEventDto, sourceIp?: string): Promise<TagEvent> {
+  async createEvent(dto: CreateTagEventDto, sourceIp?: string): Promise<TagEvent | null> {
     const ip = dto.source_ip || sourceIp || '127.0.0.1';
+
+    // Check for throttling
+    const throttleTime = await this.settingsService.getThrottleTime();
+    if (throttleTime > 0) {
+      const timeWindow = new Date(Date.now() - throttleTime * 60 * 1000).toISOString();
+      const existingEvent = this.db.queryOne<TagEvent>(
+        'SELECT * FROM tag_events WHERE card_uid = ? AND event_time >= ? LIMIT 1',
+        [dto.card_uid, timeWindow]
+      );
+
+      if (existingEvent) {
+        console.log(`Event throttled for card ${dto.card_uid}. Last event: ${existingEvent.event_time}`);
+        return null;
+      }
+    }
 
     // Retry logic for SQLite busy errors
     let retries = 3;

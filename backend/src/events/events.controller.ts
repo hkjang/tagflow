@@ -21,6 +21,13 @@ export class EventsController {
       const sourceIp = req.ip || req.connection.remoteAddress;
       const event = await this.eventsService.createEvent(dto, sourceIp);
 
+      if (!event) {
+        return {
+          status: 'ignored',
+          message: 'Event throttled',
+        };
+      }
+
       // Trigger webhooks asynchronously (don't await)
       this.webhooksService.triggerWebhooks(event).catch(error => {
         console.error('Webhook trigger failed:', error);
@@ -53,6 +60,15 @@ export class EventsController {
       console.log('Creating event with source IP:', sourceIp);
 
       const event = await this.eventsService.createEvent(dto, sourceIp);
+
+      if (!event) {
+        return {
+          success: true,
+          event: null,
+          message: 'Tag ignored (throttled)',
+        };
+      }
+
       console.log('Event created successfully:', event);
 
       // Trigger webhooks asynchronously (don't await)

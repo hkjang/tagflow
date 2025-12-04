@@ -4,6 +4,7 @@ import { settingsService } from '../../../../services/settings.service';
 export const GeneralSettings: React.FC = () => {
     const [systemName, setSystemName] = useState('');
     const [webhookCardUidKey, setWebhookCardUidKey] = useState('');
+    const [tagThrottleTime, setTagThrottleTime] = useState('0');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -15,6 +16,7 @@ export const GeneralSettings: React.FC = () => {
             const settings = await settingsService.getSettings();
             setSystemName(settings.system_name || '');
             setWebhookCardUidKey(settings.webhook_card_uid_key || 'card_uid');
+            setTagThrottleTime(settings.tag_throttle_time || '0');
         } catch (error) {
             console.error('Failed to load settings:', error);
         } finally {
@@ -27,6 +29,7 @@ export const GeneralSettings: React.FC = () => {
             await settingsService.updateSettings({
                 system_name: systemName,
                 webhook_card_uid_key: webhookCardUidKey,
+                tag_throttle_time: tagThrottleTime,
             });
             alert('Settings saved successfully');
         } catch (error) {
@@ -77,6 +80,29 @@ export const GeneralSettings: React.FC = () => {
                         value={webhookCardUidKey}
                         onChange={(e) => setWebhookCardUidKey(e.target.value)}
                         placeholder="card_uid"
+                        style={{
+                            width: '100%',
+                            maxWidth: '400px',
+                            padding: '0.5rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.875rem'
+                        }}
+                    />
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
+                        Tag Throttle Time (minutes)
+                    </label>
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                        If a tag is scanned multiple times within this window, subsequent scans will be ignored. Set to 0 to disable.
+                    </p>
+                    <input
+                        type="number"
+                        min="0"
+                        value={tagThrottleTime}
+                        onChange={(e) => setTagThrottleTime(e.target.value)}
                         style={{
                             width: '100%',
                             maxWidth: '400px',

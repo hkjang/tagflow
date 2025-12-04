@@ -48,4 +48,9 @@ export class SettingsService {
         const row = this.db.queryOne<any>('SELECT value FROM settings WHERE key = ?', ['webhook_card_uid_key']);
         return row ? row.value : 'card_uid';
     }
+
+    async getThrottleTime(): Promise<number> {
+        const row = this.db.queryOne<any>('SELECT value FROM settings WHERE key = ?', ['tag_throttle_time']);
+        return row ? parseInt(row.value, 10) : 0;
+    }
 }
