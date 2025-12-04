@@ -31,7 +31,8 @@
         "signIn": "로그인",
         "signingIn": "로그인 중...",
         "defaultCredentials": "기본 계정: admin / admin123",
-        "invalidCredentials": "잘못된 사용자명 또는 비밀번호입니다"
+        "invalidCredentials": "잘못된 사용자명 또는 비밀번호입니다",
+        "userGuide": "사용자 가이드"
     },
     "dashboard": {
         "title": "대시보드",
@@ -161,5 +162,52 @@
         "title": "언어",
         "korean": "한국어",
         "english": "English"
+    },
+    "guide": {
+        "title": "TagFlow 사용자 가이드",
+        "subtitle": "RFID 태그 관리 시스템 안내서",
+        "backToLogin": "로그인으로 돌아가기",
+        "overview": {
+            "title": "서비스 소개",
+            "description": "TagFlow는 RFID 태그 이벤트를 실시간으로 수집하고 관리하는 시스템입니다. 태그 스캔 데이터를 모니터링하고, 웹훅을 통해 외부 시스템과 연동하며, 다양한 리포트를 통해 데이터를 분석할 수 있습니다."
+        },
+        "features": {
+            "title": "주요 기능",
+            "dashboard": {
+                "title": "대시보드",
+                "description": "실시간으로 태그 이벤트 현황, 웹훅 성공률, 최근 이벤트 등을 한눈에 확인할 수 있습니다."
+            },
+            "tagInput": {
+                "title": "태그 입력",
+                "description": "8자리 RFID 태그 UID를 수동으로 입력하여 이벤트를 생성할 수 있습니다. 입력 완료 시 자동으로 등록됩니다."
+            },
+            "reports": {
+                "title": "리포트",
+                "description": "기간별 이벤트 통계, 가장 활발한 카드, 웹훅 성능 등 다양한 분석 데이터를 확인하고 CSV로 내보낼 수 있습니다."
+            },
+            "webhook": {
+                "title": "웹훅 설정",
+                "description": "태그 이벤트 발생 시 외부 시스템으로 데이터를 전송할 웹훅을 설정할 수 있습니다. 커스텀 헤더와 필드 매핑을 지원합니다."
+            }
+        },
+        "gettingStarted": {
+            "title": "시작하기",
+            "step1": "기본 계정(admin / admin123)으로 로그인합니다.",
+            "step2": "설정 메뉴에서 필요한 웹훅을 등록합니다.",
+            "step3": "태그 입력 메뉴에서 RFID 태그를 등록하거나 스캔합니다.",
+            "step4": "대시보드와 리포트에서 데이터를 모니터링합니다."
+        },
+        "roles": {
+            "title": "사용자 역할",
+            "role": "역할",
+            "permissions": "권한",
+            "adminDesc": "모든 기능 사용 가능, 사용자 관리, 시스템 설정 변경",
+            "operatorDesc": "태그 입력, 대시보드 조회, 리포트 조회",
+            "viewerDesc": "대시보드 조회, 리포트 조회 (읽기 전용)"
+        },
+        "help": {
+            "title": "도움이 필요하신가요?",
+            "description": "시스템 관리자에게 문의하거나 문서를 참조하세요."
+        }
     }
 }

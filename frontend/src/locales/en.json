@@ -31,7 +31,8 @@
         "signIn": "Sign in",
         "signingIn": "Signing in...",
         "defaultCredentials": "Default credentials: admin / admin123",
-        "invalidCredentials": "Invalid username or password"
+        "invalidCredentials": "Invalid username or password",
+        "userGuide": "User Guide"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -161,5 +162,52 @@
         "title": "Language",
         "korean": "한국어",
         "english": "English"
+    },
+    "guide": {
+        "title": "TagFlow User Guide",
+        "subtitle": "RFID Tag Management System Manual",
+        "backToLogin": "Back to Login",
+        "overview": {
+            "title": "Overview",
+            "description": "TagFlow is a system that collects and manages RFID tag events in real-time. You can monitor tag scan data, integrate with external systems through webhooks, and analyze data through various reports."
+        },
+        "features": {
+            "title": "Key Features",
+            "dashboard": {
+                "title": "Dashboard",
+                "description": "View real-time tag event status, webhook success rate, and recent events at a glance."
+            },
+            "tagInput": {
+                "title": "Tag Input",
+                "description": "Manually input 8-character RFID tag UIDs to create events. Tags are automatically registered upon input completion."
+            },
+            "reports": {
+                "title": "Reports",
+                "description": "View various analytics data including period-based event statistics, most active cards, and webhook performance. Export to CSV available."
+            },
+            "webhook": {
+                "title": "Webhook Settings",
+                "description": "Configure webhooks to send data to external systems when tag events occur. Supports custom headers and field mapping."
+            }
+        },
+        "gettingStarted": {
+            "title": "Getting Started",
+            "step1": "Log in with the default account (admin / admin123).",
+            "step2": "Register necessary webhooks in the Settings menu.",
+            "step3": "Register or scan RFID tags in the Tag Input menu.",
+            "step4": "Monitor data through the Dashboard and Reports."
+        },
+        "roles": {
+            "title": "User Roles",
+            "role": "Role",
+            "permissions": "Permissions",
+            "adminDesc": "Full access to all features, user management, system configuration",
+            "operatorDesc": "Tag input, dashboard view, report view",
+            "viewerDesc": "Dashboard view, report view (read-only)"
+        },
+        "help": {
+            "title": "Need Help?",
+            "description": "Contact your system administrator or refer to the documentation."
+        }
     }
 }

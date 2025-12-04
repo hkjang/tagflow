@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from '../../lib/i18n';
 
@@ -209,6 +210,22 @@ export default function LoginPage() {
           color: '#6b7280',
         }}>
           <p>{t('login.defaultCredentials')}</p>
+        </div>
+
+        <div style={{
+          marginTop: '1rem',
+          textAlign: 'center',
+          fontSize: '0.875rem',
+        }}>
+          <Link href="/guide" style={{
+            color: '#2563eb',
+            textDecoration: 'none',
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+          >
+            {t('login.userGuide')}
+          </Link>
         </div>
       </div>
     </div>
