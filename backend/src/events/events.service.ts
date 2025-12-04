@@ -4,30 +4,48 @@ import { TagEvent, CreateTagEventDto } from '@shared/event';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(private readonly db: DatabaseService) { }
 
   async createEvent(dto: CreateTagEventDto, sourceIp?: string): Promise<TagEvent> {
     const ip = dto.source_ip || sourceIp || '127.0.0.1';
-    
+
     // Retry logic for SQLite busy errors
     let retries = 3;
     let lastError: Error = new Error('Unknown error');
 
     while (retries > 0) {
       try {
+        console.log('Creating event with:', { card_uid: dto.card_uid, ip });
         const result = this.db.exec(
           'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag) VALUES (?, CURRENT_TIMESTAMP, ?, 0)',
           [dto.card_uid, ip],
         );
+
+        console.log('Insert result:', result);
+        console.log('Last insert rowid:', result.lastInsertRowid);
 
         const event = this.db.queryOne<TagEvent>(
           'SELECT * FROM tag_events WHERE id = ?',
           [result.lastInsertRowid],
         );
 
-        if (!event) throw new Error('Failed to create event');
+        console.log('Queried event:', event);
+
+        if (!event) {
+          console.error('Failed to retrieve event after insert. Trying to get latest event...');
+          // Fallback: try to get the most recent event
+          const latestEvent = this.db.queryOne<TagEvent>(
+            'SELECT * FROM tag_events ORDER BY id DESC LIMIT 1'
+          );
+          console.log('Latest event:', latestEvent);
+          if (latestEvent) {
+            return latestEvent;
+          }
+          throw new Error('Failed to create event');
+        }
         return event;
       } catch (error: any) {
+        console.error('Event creation error:', error);
         lastError = error;
         if (error.message?.includes('BUSY') && retries > 1) {
           retries--;

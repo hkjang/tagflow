@@ -3,9 +3,14 @@ import { DatabaseService } from '../database/database.service';
 import { Webhook, WebhookMapping, WebhookLog, CreateWebhookDto, HttpMethod } from '@shared/webhook';
 import axios, { AxiosRequestConfig } from 'axios';
 
+import { SettingsService } from '../settings/settings.service';
+
 @Injectable()
 export class WebhooksService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly settingsService: SettingsService,
+  ) { }
 
   // CRUD operations for webhooks
   async createWebhook(dto: CreateWebhookDto): Promise<Webhook> {
@@ -160,7 +165,7 @@ export class WebhooksService {
   private setNestedValue(obj: any, path: string, value: any): void {
     const keys = path.split('.');
     const lastKey = keys.pop();
-    
+
     let current = obj;
     for (const key of keys) {
       if (!(key in current)) {
@@ -168,7 +173,7 @@ export class WebhooksService {
       }
       current = current[key];
     }
-    
+
     if (lastKey) {
       current[lastKey] = value;
     }
@@ -178,7 +183,7 @@ export class WebhooksService {
   async triggerWebhooks(eventData: any): Promise<void> {
     const webhooks = await this.getActiveWebhooks();
 
-    const promises = webhooks.map(webhook => 
+    const promises = webhooks.map(webhook =>
       this.executeWebhook(webhook, eventData).catch(error => {
         console.error(`Webhook ${webhook.id} failed:`, error);
       })
@@ -188,14 +193,37 @@ export class WebhooksService {
   }
 
   async executeWebhook(webhook: Webhook, eventData: any): Promise<void> {
+    let payload: any = { ...eventData };
+
     try {
       // Get mappings for this webhook
       const mappings = await this.getMappingsByWebhookId(webhook.id);
 
       // Apply field mappings
-      const payload = mappings.length > 0 
+      payload = mappings.length > 0
         ? this.applyMappings(eventData, mappings)
-        : eventData;
+        : { ...eventData }; // Create a copy to avoid mutating original
+
+      // Add system name (with fallback if settings table doesn't exist)
+      try {
+        const systemName = await this.settingsService.getSystemName();
+        payload['system_name'] = systemName;
+      } catch (error) {
+        console.warn('Failed to get system name from settings, using default:', error);
+        payload['system_name'] = 'TagFlow RFID System';
+      }
+
+      // Rename card_uid if configured (with fallback if settings table doesn't exist)
+      try {
+        const cardUidKey = await this.settingsService.getWebhookCardUidKey();
+        if (cardUidKey !== 'card_uid' && payload['card_uid']) {
+          payload[cardUidKey] = payload['card_uid'];
+          delete payload['card_uid'];
+        }
+      } catch (error) {
+        console.warn('Failed to get webhook card UID key from settings, using default:', error);
+        // Keep card_uid as is
+      }
 
       // Prepare HTTP request
       const config: AxiosRequestConfig = {
@@ -218,12 +246,15 @@ export class WebhooksService {
       this.logWebhookExecution(webhook.id, payload, response.status, JSON.stringify(response.data));
     } catch (error: any) {
       // Log failure and add to retry queue
-      const errorMessage = error.response?.data || error.message;
+      let errorMessage = error.response?.data || error.message;
+      if (typeof errorMessage === 'object') {
+        errorMessage = JSON.stringify(errorMessage);
+      }
       const status = error.response?.status || 0;
 
       this.logWebhookExecution(
         webhook.id,
-        eventData,
+        payload,
         status,
         undefined,
         errorMessage,
@@ -247,7 +278,7 @@ export class WebhooksService {
   ): void {
     this.db.exec(
       'INSERT INTO webhook_logs (webhook_id, payload, response_status, response_body, error_message) VALUES (?, ?, ?, ?, ?)',
-      [webhookId, JSON.stringify(payload), status, responseBody, errorMessage],
+      [webhookId, JSON.stringify(payload), status, responseBody || null, errorMessage || null],
     );
   }
 
@@ -284,6 +315,7 @@ export class WebhooksService {
         } catch (error: any) {
           // Failed - increment retry count and schedule next retry
           const nextRetryMinutes = Math.pow(2, item.retry_count + 1); // Exponential backoff
+          console.log('Retry queue update:', { nextRetryMinutes, itemId: item.id });
           this.db.exec(
             'UPDATE webhook_retry_queue SET retry_count = retry_count + 1, next_retry = datetime("now", "+" || ? || " minutes") WHERE id = ?',
             [nextRetryMinutes, item.id],

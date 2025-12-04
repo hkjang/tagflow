@@ -9,7 +9,7 @@ import { UserRole } from '@shared/user';
 @Controller('webhooks')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class WebhooksController {
-  constructor(private readonly webhooksService: WebhooksService) {}
+  constructor(private readonly webhooksService: WebhooksService) { }
 
   @Get()
   @Roles(UserRole.ADMIN)
@@ -69,7 +69,8 @@ export class WebhooksController {
   async testWebhook(@Param('id') id: string, @Body() testData?: any) {
     try {
       const webhook = await this.webhooksService.getWebhookById(parseInt(id));
-      const data = testData || {
+      const hasTestData = testData && Object.keys(testData).length > 0;
+      const data = hasTestData ? testData : {
         card_uid: 'TEST123456',
         event_time: new Date().toISOString(),
         source_ip: '127.0.0.1',
@@ -104,7 +105,7 @@ export class WebhooksController {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class WebhookMappingsController {
-  constructor(private readonly webhooksService: WebhooksService) {}
+  constructor(private readonly webhooksService: WebhooksService) { }
 
   @Get(':webhookId')
   async getMappings(@Param('webhookId') webhookId: string) {

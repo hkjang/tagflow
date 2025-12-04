@@ -17,12 +17,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       fs.mkdirSync(dataDir, { recursive: true });
     }
     this.dbPath = join(dataDir, 'tagflow.db');
+    console.log('DatabaseService initialized');
+    console.log('CWD:', process.cwd());
+    console.log('DB Path:', this.dbPath);
   }
 
   async onModuleInit() {
     // Initialize sql.js
     this.SQL = await initSqlJs();
-    
+
     // Load existing database or create new one
     if (fs.existsSync(this.dbPath)) {
       const buffer = fs.readFileSync(this.dbPath);
@@ -30,7 +33,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     } else {
       this.db = new this.SQL.Database();
     }
-    
+
     // Enable WAL mode for better concurrency (note: sql.js doesn't support WAL, but we keep for compatibility)
     console.log(`Database connected: ${this.dbPath}`);
   }
@@ -60,14 +63,14 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     try {
       const stmt = this.db.prepare(sql);
       stmt.bind(params);
-      
+
       const results: T[] = [];
       while (stmt.step()) {
         const row = stmt.getAsObject();
         results.push(row as T);
       }
       stmt.free();
-      
+
       this.saveDatabase();
       return results;
     } catch (error: any) {
@@ -94,14 +97,33 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    */
   exec(sql: string, params: any[] = []): { changes: number; lastInsertRowid: number } {
     try {
+      // Check for undefined params
+      if (params.some(p => p === undefined)) {
+        console.error('Database exec error: Undefined parameter found in params:', params);
+        console.error('Failing SQL:', sql);
+      }
+
+      // Execute the query
       this.db.run(sql, params);
+
+      // Get last insert rowid BEFORE saving (sql.js limitation)
+      // Use exec to get the last_insert_rowid() value
+      const result = this.db.exec('SELECT last_insert_rowid() as id');
+      let lastInsertRowid = 0;
+
+      if (result && result.length > 0 && result[0].values && result[0].values.length > 0) {
+        lastInsertRowid = result[0].values[0][0] as number;
+      }
+
+      console.log('Last insert rowid from exec:', lastInsertRowid);
+
+      // Save database after getting the rowid
       this.saveDatabase();
-      
-      // Get changes and last insert rowid
+
+      // Get changes
       const changes = this.db.getRowsModified();
-      const lastInsertRowid = this.queryOne<{ id: number }>('SELECT last_insert_rowid() as id')?.id || 0;
-      
-      return { 
+
+      return {
         changes,
         lastInsertRowid
       };
@@ -139,7 +161,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    */
   async runMigrations() {
     const migrationsDir = join(__dirname, 'migrations');
-    
+
     if (!fs.existsSync(migrationsDir)) {
       console.log('No migrations directory found');
       return;
@@ -155,7 +177,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     for (const file of migrationFiles) {
       const sql = fs.readFileSync(join(migrationsDir, file), 'utf-8');
       console.log(`Running migration: ${file}`);
-      
+
       // Split SQL by semicolon and execute each statement
       const statements = sql.split(';').filter(s => s.trim());
       for (const statement of statements) {
@@ -174,7 +196,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    */
   async runSeeds() {
     const seedsDir = join(__dirname, 'seeds');
-    
+
     if (!fs.existsSync(seedsDir)) {
       console.log('No seeds directory found');
       return;
@@ -190,7 +212,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     for (const file of seedFiles) {
       const sql = fs.readFileSync(join(seedsDir, file), 'utf-8');
       console.log(`Running seed: ${file}`);
-      
+
       // Split SQL by semicolon and execute each statement
       const statements = sql.split(';').filter(s => s.trim());
       for (const statement of statements) {

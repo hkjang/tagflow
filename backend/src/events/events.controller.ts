@@ -38,14 +38,22 @@ export class EventsController {
   @Post('manual')
   @Roles(UserRole.ADMIN, UserRole.OPERATOR)
   async createManualTagInput(@Body() dto: CreateTagEventDto, @Req() req: any) {
+    console.log('==== Manual Tag Input Request ====');
+    console.log('DTO:', dto);
+    console.log('User:', req.user);
+
     // Validate that card_uid is exactly 8 characters
     if (!dto.card_uid || dto.card_uid.length !== 8) {
+      console.log('Validation failed: Card UID must be exactly 8 characters');
       throw new BadRequestException('Card UID must be exactly 8 characters');
     }
 
     try {
       const sourceIp = req.ip || req.connection.remoteAddress;
+      console.log('Creating event with source IP:', sourceIp);
+
       const event = await this.eventsService.createEvent(dto, sourceIp);
+      console.log('Event created successfully:', event);
 
       // Trigger webhooks asynchronously (don't await)
       this.webhooksService.triggerWebhooks(event).catch(error => {
@@ -58,6 +66,11 @@ export class EventsController {
         message: 'Tag registered successfully',
       };
     } catch (error: any) {
+      console.error('==== Manual Tag Input Error ====');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+
       throw new HttpException(
         error.message || 'Failed to create tag event',
         HttpStatus.INTERNAL_SERVER_ERROR,
