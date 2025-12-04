@@ -35,7 +35,7 @@ npm run build
 
 ```powershell
 # Windows x64 NW.js 다운로드 스크립트
-$version = "0.82.0"  # 원하는 버전
+$version = "0.83.0"  # 현재 사용 버전
 $url = "https://dl.nwjs.io/v$version/nwjs-v$version-win-x64.zip"
 $output = "nwjs.zip"
 
@@ -51,7 +51,7 @@ Expand-Archive -Path $output -DestinationPath "nwjs-runtime"
 
 ```powershell
 # NW.js 압축 해제 경로
-$nwjsDir = "nwjs-v0.82.0-win-x64"
+$nwjsDir = "nwjs-v0.83.0-win-x64"
 ```
 
 #### 2. 애플리케이션 파일 복사
@@ -81,7 +81,7 @@ cd $nwjsDir
 
 ```powershell
 # 설정
-$nwjsDir = "nwjs-v0.82.0-win-x64"
+$nwjsDir = "nwjs-v0.83.0-win-x64"
 $outputDir = "TagFlow-Release"
 
 # 준비
@@ -147,26 +147,45 @@ Write-Host "Run: cd $outputDir; .\nw.exe"
 
 ### main.js
 
-백엔드 서버 시작 로직:
+백엔드 서버 시작 및 프론트엔드 HTTP 서버 로직:
 
 ```javascript
-const { spawn } = require("child_process");
-const path = require("path");
+// NW.js 브라우저 컨텍스트에서는 nw.require 사용
+const path = nw.require('path');
+const fs = nw.require('fs');
+const http = nw.require('http');
+const { spawn } = nw.require('child_process');
 
-// 백엔드 시작
-const backendPath = path.join(__dirname, "resources", "backend");
-const backendProcess = spawn("node", ["dist/main.js"], {
-  cwd: backendPath,
-  stdio: "inherit",
-});
+// __dirname 수동 정의 (NW.js 브라우저 컨텍스트)
+const __dirname = path.dirname(process.mainModule.filename);
 
-// 프론트엔드 로드
-setTimeout(() => {
-  nw.Window.open("http://localhost:3000", {}, (win) => {
-    // 창 설정
+const BACKEND_PORT = 3001;
+const FRONTEND_PORT = 3002;  // 패키지 모드에서 프론트엔드 서버 포트
+
+// 패키지 모드 확인
+const isPackaged = fs.existsSync(path.join(__dirname, 'resources', 'backend', 'dist'));
+
+// Backend 시작
+function startBackend() {
+  const backendEntry = path.join(__dirname, 'resources', 'backend', 'dist', 'main.js');
+  const backendCwd = path.join(__dirname, 'resources', 'backend');
+  
+  return spawn('node', [backendEntry], {
+    cwd: backendCwd,
+    env: { ...process.env, PORT: BACKEND_PORT.toString() },
+    shell: true
   });
-}, 3000);
+}
+
+// Frontend HTTP 서버 (정적 파일 서빙)
+function startFrontendServer() {
+  const frontendPath = path.join(__dirname, 'resources', 'frontend');
+  // HTTP 서버 로직...
+  // 포트 3002에서 frontend/out 폴더 서빙
+}
 ```
+
+> **중요**: NW.js 브라우저 컨텍스트에서는 `require()` 대신 `nw.require()`를 사용해야 합니다.
 
 ## 인스톨러 생성
 

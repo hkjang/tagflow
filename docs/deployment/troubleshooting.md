@@ -315,6 +315,54 @@ Authorization: Bearer {올바른_토큰}
    nw.Window.get().showDevTools();
    ```
 
+### __dirname 또는 require 오류
+
+**증상**: `__dirname is not defined` 또는 `require is not defined`
+
+**원인**: NW.js 브라우저 컨텍스트에서는 Node.js 전역 변수 사용 불가
+
+**해결**:
+
+```javascript
+// nw.require 사용
+const path = nw.require("path");
+const fs = nw.require("fs");
+const { spawn } = nw.require("child_process");
+
+// __dirname 수동 정의
+const __dirname = path.dirname(process.mainModule.filename);
+```
+
+### Frontend 로드 오류 (CORS)
+
+**증상**: `Access-Control-Allow-Origin` 오류, 프론트엔드 로드 실패
+
+**원인**: 패키지 모드에서 `file://` 프로토콜로 Next.js 정적 파일 로드 시 CORS 오류
+
+**해결**: HTTP 서버로 프론트엔드 서빙 (포트 3002)
+
+```javascript
+// main.js에서 HTTP 서버 시작
+const http = nw.require("http");
+const FRONTEND_PORT = 3002;
+
+// HTTP 서버로 frontend/out 폴더 서빙
+// 그 후 iframe.src = `http://localhost:${FRONTEND_PORT}`
+```
+
+### node_modules 복사 오류
+
+**증상**: 패키징 시 심볼릭 링크 오류 또는 무한 루프
+
+**원인**: npm workspaces의 `@tagflow` 심볼릭 링크
+
+**해결**: robocopy로 심볼릭 링크 제외
+
+```powershell
+# @tagflow 폴더 제외하고 복사
+robocopy node_modules nwjs\resources\backend\node_modules /E /XD "@tagflow"
+```
+
 ### 앱이 먼저 뜨고 내용이 나중에 로드됨
 
 **증상**: 창은 표시되지만 내용이 늦게 로드
@@ -322,10 +370,21 @@ Authorization: Bearer {올바른_토큰}
 **해결**:
 
 ```javascript
-// main.js
-setTimeout(() => {
-  nw.Window.open('http://localhost:3000', ...);
-}, 5000);  // 대기 시간 증가
+// main.js - Backend 준비 상태 확인 후 Frontend 로드
+function checkBackendReady(resolve, reject, attempts) {
+  if (attempts > 30) {
+    reject(new Error("Backend failed to start"));
+    return;
+  }
+
+  http
+    .get(`http://localhost:${BACKEND_PORT}`, (res) => {
+      resolve();
+    })
+    .on("error", () => {
+      setTimeout(() => checkBackendReady(resolve, reject, attempts + 1), 1000);
+    });
+}
 ```
 
 ## 일반적인 오류 메시지

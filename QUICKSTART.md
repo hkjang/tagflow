@@ -10,7 +10,7 @@
 ### 1. Install all dependencies
 
 ```powershell
-cd d:\project\tagflow
+cd path\to\tagflow
 npm install
 ```
 
@@ -146,12 +146,14 @@ Base URL: http://localhost:3001
 ## Building for Production
 
 ```powershell
+# 전체 빌드
 npm run build
-cd nwjs
-npm run build
+
+# NW.js 패키지 (빌드 후 실행)
+npm run build:exe
 ```
 
-Installer will be in `nwjs/dist/`
+패키지된 앱은 [nwjs/PACKAGING.md](nwjs/PACKAGING.md)를 참조하세요.
 
 ## Support
 

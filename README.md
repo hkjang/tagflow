@@ -103,9 +103,11 @@ tagflow/
 # Build for production
 npm run build
 
-# Package NW.js app
-npm --workspace=nwjs run build
+# Package NW.js app (requires NW.js SDK)
+npm run build:exe
 ```
+
+자세한 패키징 정보는 [nwjs/PACKAGING.md](nwjs/PACKAGING.md)를 참조하세요.
 
 ## License
 

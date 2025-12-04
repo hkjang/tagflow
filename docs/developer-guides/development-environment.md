@@ -16,6 +16,8 @@ npm run dev
 - Frontend (Next.js) - http://localhost:3000
 - NW.js 데스크톱 앱 (5초 후 자동 실행)
 
+> **참고**: 패키지 모드에서는 Frontend가 포트 3002에서 HTTP 서버로 실행됩니다.
+
 ### 개별 서비스 실행
 
 #### Backend만
