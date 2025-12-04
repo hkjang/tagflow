@@ -117,11 +117,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
       console.log('Last insert rowid from exec:', lastInsertRowid);
 
-      // Save database after getting the rowid
-      this.saveDatabase();
-
-      // Get changes
+      // Get changes BEFORE saving database (sql.js limitation)
       const changes = this.db.getRowsModified();
+
+      // Save database after getting all values
+      this.saveDatabase();
 
       return {
         changes,
