@@ -10,7 +10,7 @@ import { UserRole } from '@shared/user';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class CleanupController {
-  constructor(private readonly cleanupService: CleanupService) {}
+  constructor(private readonly cleanupService: CleanupService) { }
 
   @Get('logs')
   async getCleanupLogs(@Query('limit') limit?: string) {
@@ -31,6 +31,30 @@ export class CleanupController {
     } catch (error: any) {
       throw new HttpException(
         error.message || 'Cleanup failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('reset-tag-events')
+  async resetTagEvents(@CurrentUser() user: any) {
+    try {
+      return await this.cleanupService.resetTagEvents(user.sub);
+    } catch (error: any) {
+      throw new HttpException(
+        error.message || 'Reset tag events failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('reset-webhook-logs')
+  async resetWebhookLogs(@CurrentUser() user: any) {
+    try {
+      return await this.cleanupService.resetWebhookLogs(user.sub);
+    } catch (error: any) {
+      throw new HttpException(
+        error.message || 'Reset webhook logs failed',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

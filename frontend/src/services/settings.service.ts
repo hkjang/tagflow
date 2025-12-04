@@ -12,4 +12,20 @@ export const settingsService = {
         const response = await axios.post(`${API_URL}/settings`, settings);
         return response.data;
     },
+
+    async resetTagEvents(): Promise<{ deletedCount: number }> {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.post(`${API_URL}/cleanup/reset-tag-events`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    },
+
+    async resetWebhookLogs(): Promise<{ deletedCount: number }> {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.post(`${API_URL}/cleanup/reset-webhook-logs`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    },
 };

@@ -6,6 +6,8 @@ export const GeneralSettings: React.FC = () => {
     const [webhookCardUidKey, setWebhookCardUidKey] = useState('');
     const [tagThrottleTime, setTagThrottleTime] = useState('0');
     const [loading, setLoading] = useState(true);
+    const [resettingTagEvents, setResettingTagEvents] = useState(false);
+    const [resettingWebhookLogs, setResettingWebhookLogs] = useState(false);
 
     useEffect(() => {
         loadSettings();
@@ -38,96 +40,188 @@ export const GeneralSettings: React.FC = () => {
         }
     };
 
+    const handleResetTagEvents = async () => {
+        if (!confirm('정말로 모든 Tag Events를 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.')) {
+            return;
+        }
+
+        try {
+            setResettingTagEvents(true);
+            const result = await settingsService.resetTagEvents();
+            alert(`Tag Events가 초기화되었습니다.\n삭제된 레코드: ${result.deletedCount}개`);
+        } catch (error: any) {
+            console.error('Failed to reset tag events:', error);
+            alert(error.response?.data?.message || 'Failed to reset tag events');
+        } finally {
+            setResettingTagEvents(false);
+        }
+    };
+
+    const handleResetWebhookLogs = async () => {
+        if (!confirm('정말로 모든 Webhook Logs를 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.')) {
+            return;
+        }
+
+        try {
+            setResettingWebhookLogs(true);
+            const result = await settingsService.resetWebhookLogs();
+            alert(`Webhook Logs가 초기화되었습니다.\n삭제된 레코드: ${result.deletedCount}개`);
+        } catch (error: any) {
+            console.error('Failed to reset webhook logs:', error);
+            alert(error.response?.data?.message || 'Failed to reset webhook logs');
+        } finally {
+            setResettingWebhookLogs(false);
+        }
+    };
+
     if (loading) return <div>Loading settings...</div>;
 
     return (
-        <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
-                <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>General Settings</h2>
-                <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Manage system-wide configurations.</p>
+        <>
+            <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', overflow: 'hidden', marginBottom: '2rem' }}>
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+                    <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>General Settings</h2>
+                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Manage system-wide configurations.</p>
+                </div>
+
+                <div style={{ padding: '1.5rem' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
+                            System Name
+                        </label>
+                        <input
+                            type="text"
+                            value={systemName}
+                            onChange={(e) => setSystemName(e.target.value)}
+                            placeholder="TagFlow RFID System"
+                            style={{
+                                width: '100%',
+                                maxWidth: '400px',
+                                padding: '0.5rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem'
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
+                            Webhook Card UID Key
+                        </label>
+                        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                            The key name used for the Card UID in webhook payloads (default: card_uid).
+                        </p>
+                        <input
+                            type="text"
+                            value={webhookCardUidKey}
+                            onChange={(e) => setWebhookCardUidKey(e.target.value)}
+                            placeholder="card_uid"
+                            style={{
+                                width: '100%',
+                                maxWidth: '400px',
+                                padding: '0.5rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem'
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
+                            Tag Throttle Time (minutes)
+                        </label>
+                        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                            If a tag is scanned multiple times within this window, subsequent scans will be ignored. Set to 0 to disable.
+                        </p>
+                        <input
+                            type="number"
+                            min="0"
+                            value={tagThrottleTime}
+                            onChange={(e) => setTagThrottleTime(e.target.value)}
+                            style={{
+                                width: '100%',
+                                maxWidth: '400px',
+                                padding: '0.5rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem'
+                            }}
+                        />
+                    </div>
+
+                    <button
+                        onClick={handleSave}
+                        style={{
+                            backgroundColor: '#2563eb',
+                            color: 'white',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '0.375rem',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                        }}>
+                        Save Changes
+                    </button>
+                </div>
             </div>
 
-            <div style={{ padding: '1.5rem' }}>
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                        System Name
-                    </label>
-                    <input
-                        type="text"
-                        value={systemName}
-                        onChange={(e) => setSystemName(e.target.value)}
-                        placeholder="TagFlow RFID System"
-                        style={{
-                            width: '100%',
-                            maxWidth: '400px',
-                            padding: '0.5rem',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '0.375rem',
-                            fontSize: '0.875rem'
-                        }}
-                    />
+            {/* Data Management Section */}
+            <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+                    <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>Data Management</h2>
+                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Manage log data. These actions are irreversible.</p>
                 </div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                        Webhook Card UID Key
-                    </label>
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-                        The key name used for the Card UID in webhook payloads (default: card_uid).
-                    </p>
-                    <input
-                        type="text"
-                        value={webhookCardUidKey}
-                        onChange={(e) => setWebhookCardUidKey(e.target.value)}
-                        placeholder="card_uid"
-                        style={{
-                            width: '100%',
-                            maxWidth: '400px',
-                            padding: '0.5rem',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '0.375rem',
-                            fontSize: '0.875rem'
-                        }}
-                    />
-                </div>
+                <div style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fecaca' }}>
+                            <div>
+                                <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#991b1b', marginBottom: '0.25rem' }}>Reset Tag Events</h3>
+                                <p style={{ fontSize: '0.75rem', color: '#b91c1c' }}>모든 태그 이벤트 기록을 삭제합니다.</p>
+                            </div>
+                            <button
+                                onClick={handleResetTagEvents}
+                                disabled={resettingTagEvents}
+                                style={{
+                                    backgroundColor: resettingTagEvents ? '#9ca3af' : '#dc2626',
+                                    color: 'white',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '0.375rem',
+                                    border: 'none',
+                                    cursor: resettingTagEvents ? 'not-allowed' : 'pointer',
+                                    fontWeight: '500',
+                                    fontSize: '0.875rem',
+                                }}>
+                                {resettingTagEvents ? 'Resetting...' : 'Reset'}
+                            </button>
+                        </div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                        Tag Throttle Time (minutes)
-                    </label>
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-                        If a tag is scanned multiple times within this window, subsequent scans will be ignored. Set to 0 to disable.
-                    </p>
-                    <input
-                        type="number"
-                        min="0"
-                        value={tagThrottleTime}
-                        onChange={(e) => setTagThrottleTime(e.target.value)}
-                        style={{
-                            width: '100%',
-                            maxWidth: '400px',
-                            padding: '0.5rem',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '0.375rem',
-                            fontSize: '0.875rem'
-                        }}
-                    />
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fecaca' }}>
+                            <div>
+                                <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#991b1b', marginBottom: '0.25rem' }}>Reset Webhook Logs</h3>
+                                <p style={{ fontSize: '0.75rem', color: '#b91c1c' }}>모든 웹훅 실행 로그를 삭제합니다.</p>
+                            </div>
+                            <button
+                                onClick={handleResetWebhookLogs}
+                                disabled={resettingWebhookLogs}
+                                style={{
+                                    backgroundColor: resettingWebhookLogs ? '#9ca3af' : '#dc2626',
+                                    color: 'white',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '0.375rem',
+                                    border: 'none',
+                                    cursor: resettingWebhookLogs ? 'not-allowed' : 'pointer',
+                                    fontWeight: '500',
+                                    fontSize: '0.875rem',
+                                }}>
+                                {resettingWebhookLogs ? 'Resetting...' : 'Reset'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-                <button
-                    onClick={handleSave}
-                    style={{
-                        backgroundColor: '#2563eb',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: '500',
-                    }}>
-                    Save Changes
-                </button>
             </div>
-        </div>
+        </>
     );
 };

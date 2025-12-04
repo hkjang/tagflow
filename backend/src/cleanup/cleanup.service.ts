@@ -4,7 +4,7 @@ import { CleanupLog } from '@shared/cleanup';
 
 @Injectable()
 export class CleanupService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(private readonly db: DatabaseService) { }
 
   async cleanupOldData(adminId: number): Promise<CleanupLog> {
     try {
@@ -73,5 +73,55 @@ export class CleanupService {
 
   async manualCleanup(adminId: number): Promise<CleanupLog> {
     return await this.cleanupOldData(adminId);
+  }
+
+  /**
+   * Reset all tag events (complete table clear)
+   */
+  async resetTagEvents(adminId: number): Promise<{ deletedCount: number }> {
+    try {
+      const result = this.db.exec('DELETE FROM tag_events', []);
+
+      // Log the reset action
+      this.db.exec(
+        'INSERT INTO cleanup_logs (admin_id, deleted_count, run_time) VALUES (?, ?, datetime("now"))',
+        [adminId, result.changes],
+      );
+
+      console.log(`Tag events reset: ${result.changes} records deleted`);
+      return { deletedCount: result.changes };
+    } catch (error: any) {
+      this.db.exec(
+        'INSERT INTO cleanup_fail_logs (admin_id, error_message, run_time) VALUES (?, ?, datetime("now"))',
+        [adminId, error.message],
+      );
+      console.error('Reset tag events failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reset all webhook logs (complete table clear)
+   */
+  async resetWebhookLogs(adminId: number): Promise<{ deletedCount: number }> {
+    try {
+      const result = this.db.exec('DELETE FROM webhook_logs', []);
+
+      // Log the reset action
+      this.db.exec(
+        'INSERT INTO cleanup_logs (admin_id, deleted_count, run_time) VALUES (?, ?, datetime("now"))',
+        [adminId, result.changes],
+      );
+
+      console.log(`Webhook logs reset: ${result.changes} records deleted`);
+      return { deletedCount: result.changes };
+    } catch (error: any) {
+      this.db.exec(
+        'INSERT INTO cleanup_fail_logs (admin_id, error_message, run_time) VALUES (?, ?, datetime("now"))',
+        [adminId, error.message],
+      );
+      console.error('Reset webhook logs failed:', error);
+      throw error;
+    }
   }
 }
