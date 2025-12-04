@@ -5,18 +5,18 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 export interface Webhook {
   id: number;
   name: string;
-  url: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  headers?: string;
+  target_url: string;
+  http_method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
   is_active: boolean;
   created_at: string;
 }
 
 export interface CreateWebhookDto {
   name: string;
-  url: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  headers?: string;
+  target_url: string;
+  http_method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
   is_active?: boolean;
 }
 
