@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { settingsService } from '../../../../services/settings.service';
+import { useTranslation } from '../../../../lib/i18n';
 
 export const GeneralSettings: React.FC = () => {
+    const { t } = useTranslation();
     const [systemName, setSystemName] = useState('');
     const [webhookCardUidKey, setWebhookCardUidKey] = useState('');
     const [tagThrottleTime, setTagThrottleTime] = useState('0');
@@ -33,61 +35,61 @@ export const GeneralSettings: React.FC = () => {
                 webhook_card_uid_key: webhookCardUidKey,
                 tag_throttle_time: tagThrottleTime,
             });
-            alert('Settings saved successfully');
+            alert(t('settings.savedSuccess'));
         } catch (error) {
             console.error('Failed to save settings:', error);
-            alert('Failed to save settings');
+            alert(t('settings.saveFailed'));
         }
     };
 
     const handleResetTagEvents = async () => {
-        if (!confirm('정말로 모든 Tag Events를 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.')) {
+        if (!confirm(t('settings.confirmResetTagEvents'))) {
             return;
         }
 
         try {
             setResettingTagEvents(true);
             const result = await settingsService.resetTagEvents();
-            alert(`Tag Events가 초기화되었습니다.\n삭제된 레코드: ${result.deletedCount}개`);
+            alert(t('settings.resetTagEventsSuccess', { count: result.deletedCount }));
         } catch (error: any) {
             console.error('Failed to reset tag events:', error);
-            alert(error.response?.data?.message || 'Failed to reset tag events');
+            alert(error.response?.data?.message || t('settings.saveFailed'));
         } finally {
             setResettingTagEvents(false);
         }
     };
 
     const handleResetWebhookLogs = async () => {
-        if (!confirm('정말로 모든 Webhook Logs를 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.')) {
+        if (!confirm(t('settings.confirmResetWebhookLogs'))) {
             return;
         }
 
         try {
             setResettingWebhookLogs(true);
             const result = await settingsService.resetWebhookLogs();
-            alert(`Webhook Logs가 초기화되었습니다.\n삭제된 레코드: ${result.deletedCount}개`);
+            alert(t('settings.resetWebhookLogsSuccess', { count: result.deletedCount }));
         } catch (error: any) {
             console.error('Failed to reset webhook logs:', error);
-            alert(error.response?.data?.message || 'Failed to reset webhook logs');
+            alert(error.response?.data?.message || t('settings.saveFailed'));
         } finally {
             setResettingWebhookLogs(false);
         }
     };
 
-    if (loading) return <div>Loading settings...</div>;
+    if (loading) return <div>{t('common.loading')}</div>;
 
     return (
         <>
             <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', overflow: 'hidden', marginBottom: '2rem' }}>
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
-                    <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>General Settings</h2>
-                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Manage system-wide configurations.</p>
+                    <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>{t('settings.generalSettings')}</h2>
+                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>{t('settings.generalSettingsDesc')}</p>
                 </div>
 
                 <div style={{ padding: '1.5rem' }}>
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                            System Name
+                            {t('settings.systemName')}
                         </label>
                         <input
                             type="text"
@@ -107,10 +109,10 @@ export const GeneralSettings: React.FC = () => {
 
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                            Webhook Card UID Key
+                            {t('settings.webhookCardUidKey')}
                         </label>
                         <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-                            The key name used for the Card UID in webhook payloads (default: card_uid).
+                            {t('settings.webhookCardUidKeyDesc')}
                         </p>
                         <input
                             type="text"
@@ -130,10 +132,10 @@ export const GeneralSettings: React.FC = () => {
 
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                            Tag Throttle Time (minutes)
+                            {t('settings.tagThrottleTime')}
                         </label>
                         <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-                            If a tag is scanned multiple times within this window, subsequent scans will be ignored. Set to 0 to disable.
+                            {t('settings.tagThrottleTimeDesc')}
                         </p>
                         <input
                             type="number"
@@ -162,7 +164,7 @@ export const GeneralSettings: React.FC = () => {
                             cursor: 'pointer',
                             fontWeight: '500',
                         }}>
-                        Save Changes
+                        {t('settings.saveChanges')}
                     </button>
                 </div>
             </div>
@@ -170,16 +172,16 @@ export const GeneralSettings: React.FC = () => {
             {/* Data Management Section */}
             <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
-                    <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>Data Management</h2>
-                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Manage log data. These actions are irreversible.</p>
+                    <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>{t('settings.dataManagement')}</h2>
+                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>{t('settings.dataManagementDesc')}</p>
                 </div>
 
                 <div style={{ padding: '1.5rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fecaca' }}>
                             <div>
-                                <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#991b1b', marginBottom: '0.25rem' }}>Reset Tag Events</h3>
-                                <p style={{ fontSize: '0.75rem', color: '#b91c1c' }}>모든 태그 이벤트 기록을 삭제합니다.</p>
+                                <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#991b1b', marginBottom: '0.25rem' }}>{t('settings.resetTagEvents')}</h3>
+                                <p style={{ fontSize: '0.75rem', color: '#b91c1c' }}>{t('settings.resetTagEventsDesc')}</p>
                             </div>
                             <button
                                 onClick={handleResetTagEvents}
@@ -194,14 +196,14 @@ export const GeneralSettings: React.FC = () => {
                                     fontWeight: '500',
                                     fontSize: '0.875rem',
                                 }}>
-                                {resettingTagEvents ? 'Resetting...' : 'Reset'}
+                                {resettingTagEvents ? t('settings.resetting') : t('common.reset')}
                             </button>
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fecaca' }}>
                             <div>
-                                <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#991b1b', marginBottom: '0.25rem' }}>Reset Webhook Logs</h3>
-                                <p style={{ fontSize: '0.75rem', color: '#b91c1c' }}>모든 웹훅 실행 로그를 삭제합니다.</p>
+                                <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#991b1b', marginBottom: '0.25rem' }}>{t('settings.resetWebhookLogs')}</h3>
+                                <p style={{ fontSize: '0.75rem', color: '#b91c1c' }}>{t('settings.resetWebhookLogsDesc')}</p>
                             </div>
                             <button
                                 onClick={handleResetWebhookLogs}
@@ -216,7 +218,7 @@ export const GeneralSettings: React.FC = () => {
                                     fontWeight: '500',
                                     fontSize: '0.875rem',
                                 }}>
-                                {resettingWebhookLogs ? 'Resetting...' : 'Reset'}
+                                {resettingWebhookLogs ? t('settings.resetting') : t('common.reset')}
                             </button>
                         </div>
                     </div>
@@ -225,3 +227,4 @@ export const GeneralSettings: React.FC = () => {
         </>
     );
 };
+

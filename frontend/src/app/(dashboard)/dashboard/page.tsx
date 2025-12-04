@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import apiClient from '../../../services/api.service';
+import { useTranslation } from '../../../lib/i18n';
 
 interface EventStats {
   total: number;
@@ -28,6 +29,7 @@ interface TagEvent {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [eventStats, setEventStats] = useState<EventStats | null>(null);
   const [webhookStats, setWebhookStats] = useState<WebhookStats | null>(null);
   const [recentEvents, setRecentEvents] = useState<TagEvent[]>([]);
@@ -106,7 +108,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '1.125rem', color: '#6b7280' }}>Loading dashboard...</div>
+        <div style={{ fontSize: '1.125rem', color: '#6b7280' }}>{t('dashboard.loading')}</div>
       </div>
     );
   }
@@ -114,7 +116,7 @@ export default function DashboardPage() {
   return (
     <div>
       <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '2rem', color: '#1f2937' }}>
-        Dashboard
+        {t('dashboard.title')}
       </h1>
 
       {/* Statistics Cards Grid */}
@@ -127,9 +129,9 @@ export default function DashboardPage() {
           color: 'white',
           boxShadow: '0 4px 6px -1px rgba(102, 126, 234, 0.3)',
         }}>
-          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>총 이벤트</div>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>{t('dashboard.totalEvents')}</div>
           <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{eventStats?.total?.toLocaleString() || 0}</div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>전체 태그 스캔 횟수</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>{t('dashboard.totalEventsDesc')}</div>
         </div>
 
         {/* Today Events Card */}
@@ -140,9 +142,9 @@ export default function DashboardPage() {
           color: 'white',
           boxShadow: '0 4px 6px -1px rgba(245, 87, 108, 0.3)',
         }}>
-          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>오늘 이벤트</div>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>{t('dashboard.todayEvents')}</div>
           <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{todayCount.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>오늘 발생한 태그</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>{t('dashboard.todayEventsDesc')}</div>
         </div>
 
         {/* Unique Cards */}
@@ -153,9 +155,9 @@ export default function DashboardPage() {
           color: 'white',
           boxShadow: '0 4px 6px -1px rgba(79, 172, 254, 0.3)',
         }}>
-          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>고유 카드</div>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>{t('dashboard.uniqueCards')}</div>
           <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{eventStats?.unique_cards?.toLocaleString() || 0}</div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>등록된 카드 수</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>{t('dashboard.uniqueCardsDesc')}</div>
         </div>
 
         {/* Active Webhooks */}
@@ -166,9 +168,9 @@ export default function DashboardPage() {
           color: 'white',
           boxShadow: '0 4px 6px -1px rgba(67, 233, 123, 0.3)',
         }}>
-          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>활성 웹훅</div>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>{t('dashboard.activeWebhooks')}</div>
           <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{webhookStats?.activeWebhooks || 0} / {webhookStats?.totalWebhooks || 0}</div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>웹훅 연동 상태</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.5rem' }}>{t('dashboard.activeWebhooksDesc')}</div>
         </div>
       </div>
 
@@ -182,7 +184,7 @@ export default function DashboardPage() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
-            📊 최근 7일 이벤트 트렌드
+            📊 {t('dashboard.eventTrend')}
           </h2>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem', height: '160px' }}>
             {eventStats?.eventsByDay?.slice(0, 7).reverse().map((day, index) => {
@@ -207,7 +209,7 @@ export default function DashboardPage() {
             })}
             {(!eventStats?.eventsByDay || eventStats.eventsByDay.length === 0) && (
               <div style={{ flex: 1, textAlign: 'center', color: '#9ca3af', paddingTop: '60px' }}>
-                데이터가 없습니다
+                {t('dashboard.noData')}
               </div>
             )}
           </div>
@@ -221,7 +223,7 @@ export default function DashboardPage() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
-            🔗 웹훅 성공률 (최근 30일)
+            🔗 {t('dashboard.webhookSuccessRate')}
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div style={{ position: 'relative', width: '120px', height: '120px' }}>
@@ -252,16 +254,16 @@ export default function DashboardPage() {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>총 호출</div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>{t('dashboard.totalCalls')}</div>
                 <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937' }}>{webhookStats?.total_calls?.toLocaleString() || 0}</div>
               </div>
               <div style={{ display: 'flex', gap: '1.5rem' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#10b981' }}>✓ 성공</div>
+                  <div style={{ fontSize: '0.75rem', color: '#10b981' }}>✓ {t('dashboard.success')}</div>
                   <div style={{ fontWeight: '600', color: '#10b981' }}>{webhookStats?.successful_calls?.toLocaleString() || 0}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>✗ 실패</div>
+                  <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>✗ {t('dashboard.failed')}</div>
                   <div style={{ fontWeight: '600', color: '#ef4444' }}>{webhookStats?.failed_calls?.toLocaleString() || 0}</div>
                 </div>
               </div>
@@ -280,7 +282,7 @@ export default function DashboardPage() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
-            🏆 TOP 5 카드
+            🏆 {t('dashboard.top5Cards')}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {eventStats?.topCards?.slice(0, 5).map((card, index) => (
@@ -310,13 +312,13 @@ export default function DashboardPage() {
                   {card.card_uid}
                 </div>
                 <div style={{ fontWeight: '600', color: '#667eea' }}>
-                  {card.count}회
+                  {card.count}{t('dashboard.times')}
                 </div>
               </div>
             ))}
             {(!eventStats?.topCards || eventStats.topCards.length === 0) && (
               <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem' }}>
-                데이터가 없습니다
+                {t('dashboard.noData')}
               </div>
             )}
           </div>
@@ -330,7 +332,7 @@ export default function DashboardPage() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
-            🕐 최근 이벤트
+            🕐 {t('dashboard.recentEvents')}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {recentEvents.map((event) => (
@@ -358,7 +360,7 @@ export default function DashboardPage() {
             ))}
             {recentEvents.length === 0 && (
               <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem' }}>
-                최근 이벤트가 없습니다
+                {t('dashboard.noRecentEvents')}
               </div>
             )}
           </div>
@@ -367,3 +369,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

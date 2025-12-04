@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { reportsService, EventStatistics, WebhookStatistics, TagEvent } from '../../../services/reports.service';
+import { useTranslation } from '../../../lib/i18n';
 
 type DateRange = '7days' | '30days' | '90days' | 'custom';
 
 export default function ReportsPage() {
+  const { t } = useTranslation();
   const [eventStats, setEventStats] = useState<EventStatistics | null>(null);
   const [webhookStats, setWebhookStats] = useState<WebhookStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -290,7 +292,7 @@ export default function ReportsPage() {
             onClick={fetchData}
             style={{ ...styles.exportBtn, backgroundColor: '#3b82f6' }}
           >
-            Retry
+            {t('common.retry')}
           </button>
         </div>
       </div>
@@ -303,17 +305,17 @@ export default function ReportsPage() {
 
       {/* Header */}
       <div style={styles.header}>
-        <h1 style={styles.title}>Reports & Analytics</h1>
+        <h1 style={styles.title}>{t('reports.title')}</h1>
         <div style={styles.controls}>
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as DateRange)}
             style={styles.select}
           >
-            <option value="7days">Last 7 Days</option>
-            <option value="30days">Last 30 Days</option>
-            <option value="90days">Last 90 Days</option>
-            <option value="custom">Custom Range</option>
+            <option value="7days">{t('reports.last7Days')}</option>
+            <option value="30days">{t('reports.last30Days')}</option>
+            <option value="90days">{t('reports.last90Days')}</option>
+            <option value="custom">{t('reports.customRange')}</option>
           </select>
 
           {dateRange === 'custom' && (
@@ -325,7 +327,7 @@ export default function ReportsPage() {
                 style={styles.dateInput}
                 placeholder="Start Date"
               />
-              <span style={{ color: '#6b7280' }}>to</span>
+              <span style={{ color: '#6b7280' }}>{t('common.to')}</span>
               <input
                 type="date"
                 value={customEndDate}
@@ -344,7 +346,7 @@ export default function ReportsPage() {
             {exporting ? (
               <>
                 <span style={{ ...styles.spinner, width: '16px', height: '16px', borderWidth: '2px' }}></span>
-                Exporting...
+                {t('reports.exporting')}
               </>
             ) : (
               <>
@@ -353,7 +355,7 @@ export default function ReportsPage() {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Export CSV
+                {t('reports.exportCsv')}
               </>
             )}
           </button>
@@ -363,27 +365,27 @@ export default function ReportsPage() {
       {/* Stats Grid */}
       <div style={styles.grid}>
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Total Events</div>
+          <div style={styles.statLabel}>{t('reports.totalEvents')}</div>
           <div style={styles.statValue}>{eventStats?.total?.toLocaleString() || 0}</div>
-          <div style={styles.statSubtext}>Tag scans recorded</div>
+          <div style={styles.statSubtext}>{t('reports.totalEventsDesc')}</div>
         </div>
 
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Unique Cards</div>
+          <div style={styles.statLabel}>{t('reports.uniqueCards')}</div>
           <div style={styles.statValue}>{eventStats?.unique_cards?.toLocaleString() || 0}</div>
-          <div style={styles.statSubtext}>Different cards detected</div>
+          <div style={styles.statSubtext}>{t('reports.uniqueCardsDesc')}</div>
         </div>
 
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Active Webhooks</div>
+          <div style={styles.statLabel}>{t('reports.activeWebhooks')}</div>
           <div style={{ ...styles.statValue, color: '#10b981' }}>
             {webhookStats?.activeWebhooks || 0}
           </div>
-          <div style={styles.statSubtext}>of {webhookStats?.totalWebhooks || 0} total</div>
+          <div style={styles.statSubtext}>{t('reports.of')} {webhookStats?.totalWebhooks || 0} {t('reports.total')}</div>
         </div>
 
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Webhook Success Rate</div>
+          <div style={styles.statLabel}>{t('reports.webhookSuccessRate')}</div>
           <div style={{
             ...styles.statValue, color: webhookStats && webhookStats.total_calls > 0
               ? (webhookStats.successful_calls / webhookStats.total_calls >= 0.9 ? '#10b981' : '#f59e0b')
@@ -394,7 +396,7 @@ export default function ReportsPage() {
               : 0}%
           </div>
           <div style={styles.statSubtext}>
-            {webhookStats?.successful_calls || 0} / {webhookStats?.total_calls || 0} calls (30 days)
+            {webhookStats?.successful_calls || 0} / {webhookStats?.total_calls || 0} {t('reports.calls30Days')}
           </div>
         </div>
       </div>
@@ -403,7 +405,7 @@ export default function ReportsPage() {
       <div style={styles.twoColumn}>
         {/* Events by Day Chart */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Daily Event Activity</h2>
+          <h2 style={styles.sectionTitle}>{t('reports.dailyEventActivity')}</h2>
           {eventStats?.eventsByDay && eventStats.eventsByDay.length > 0 ? (
             <div style={styles.chartContainer}>
               <div style={styles.barContainer}>
@@ -416,26 +418,26 @@ export default function ReportsPage() {
                       }}
                     />
                     <span style={styles.barLabel}>
-                      {new Date(day.date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                      {new Date(day.date).toLocaleDateString('ko', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div style={styles.emptyState}>No event data available for this period</div>
+            <div style={styles.emptyState}>{t('reports.noEventData')}</div>
           )}
         </div>
 
         {/* Top Cards */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Most Active Cards</h2>
+          <h2 style={styles.sectionTitle}>{t('reports.mostActiveCards')}</h2>
           {eventStats?.topCards && eventStats.topCards.length > 0 ? (
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Card UID</th>
-                  <th style={{ ...styles.th, textAlign: 'right' }}>Event Count</th>
+                  <th style={styles.th}>{t('reports.cardUid')}</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>{t('reports.eventCount')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -454,23 +456,23 @@ export default function ReportsPage() {
               </tbody>
             </table>
           ) : (
-            <div style={styles.emptyState}>No card data available</div>
+            <div style={styles.emptyState}>{t('reports.noCardData')}</div>
           )}
         </div>
       </div>
 
       {/* Webhook Performance */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Webhook Performance (Last 30 Days)</h2>
+        <h2 style={styles.sectionTitle}>{t('reports.webhookPerformance')}</h2>
         {webhookStats?.webhookPerformance && webhookStats.webhookPerformance.length > 0 ? (
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Webhook</th>
-                <th style={{ ...styles.th, textAlign: 'center' }}>Total Calls</th>
-                <th style={{ ...styles.th, textAlign: 'center' }}>Successful</th>
-                <th style={{ ...styles.th, textAlign: 'center' }}>Failed</th>
-                <th style={{ ...styles.th, textAlign: 'right' }}>Success Rate</th>
+                <th style={styles.th}>{t('reports.webhook')}</th>
+                <th style={{ ...styles.th, textAlign: 'center' }}>{t('reports.totalCalls')}</th>
+                <th style={{ ...styles.th, textAlign: 'center' }}>{t('reports.successful')}</th>
+                <th style={{ ...styles.th, textAlign: 'center' }}>{t('dashboard.failed')}</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>{t('reports.successRate')}</th>
               </tr>
             </thead>
             <tbody>
@@ -520,9 +522,10 @@ export default function ReportsPage() {
             </tbody>
           </table>
         ) : (
-          <div style={styles.emptyState}>No webhook performance data available</div>
+          <div style={styles.emptyState}>{t('reports.noWebhookData')}</div>
         )}
       </div>
     </div>
   );
 }
+

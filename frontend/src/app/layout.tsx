@@ -1,7 +1,6 @@
-export const metadata = {
-  title: 'TagFlow',
-  description: 'RFID Tag Management System',
-}
+'use client';
+
+import { I18nProvider } from '../lib/i18n';
 
 export default function RootLayout({
   children,
@@ -9,8 +8,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="ko">
+      <head>
+        <title>TagFlow</title>
+        <meta name="description" content="RFID Tag Management System" />
+      </head>
+      <body>
+        <I18nProvider>{children}</I18nProvider>
+      </body>
     </html>
   )
 }

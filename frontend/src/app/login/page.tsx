@@ -3,10 +3,12 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from '../../lib/i18n';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +30,7 @@ export default function LoginPage() {
       await login(username, password);
       router.push('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid username or password');
+      setError(err.response?.data?.message || t('login.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }
@@ -84,10 +86,10 @@ export default function LoginPage() {
             color: '#1f2937',
             marginBottom: '0.5rem',
           }}>
-            TagFlow
+            {t('login.title')}
           </h1>
           <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-            Sign in to your account
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -117,7 +119,7 @@ export default function LoginPage() {
                 color: '#374151',
               }}
             >
-              Username
+              {t('login.username')}
             </label>
             <input
               id="username"
@@ -150,7 +152,7 @@ export default function LoginPage() {
                 color: '#374151',
               }}
             >
-              Password
+              {t('login.password')}
             </label>
             <input
               id="password"
@@ -194,7 +196,7 @@ export default function LoginPage() {
               if (!isLoading) e.currentTarget.style.backgroundColor = '#2563eb';
             }}
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? t('login.signingIn') : t('login.signIn')}
           </button>
         </form>
 
@@ -206,9 +208,10 @@ export default function LoginPage() {
           fontSize: '0.75rem',
           color: '#6b7280',
         }}>
-          <p>Default credentials: admin / admin123</p>
+          <p>{t('login.defaultCredentials')}</p>
         </div>
       </div>
     </div>
   );
 }
+

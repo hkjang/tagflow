@@ -3,20 +3,23 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from '../../lib/i18n';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const isAdmin = user?.role === 'admin';
 
   const menuItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-    ...(isAdmin ? [{ name: 'User Management', href: '/admin/users', icon: '👥' }] : []),
-    { name: 'Tag Management', href: '/tags', icon: '🏷️' },
-    { name: 'Tag Input', href: '/scan', icon: '📱' },
-    { name: 'Reports', href: '/reports', icon: '📈' },
-    ...(isAdmin ? [{ name: 'Settings', href: '/settings', icon: '⚙️' }] : []),
+    { name: t('sidebar.dashboard'), href: '/dashboard', icon: '📊' },
+    ...(isAdmin ? [{ name: t('sidebar.userManagement'), href: '/admin/users', icon: '👥' }] : []),
+    { name: t('sidebar.tagManagement'), href: '/tags', icon: '🏷️' },
+    { name: t('sidebar.tagInput'), href: '/scan', icon: '📱' },
+    { name: t('sidebar.reports'), href: '/reports', icon: '📈' },
+    ...(isAdmin ? [{ name: t('sidebar.settings'), href: '/settings', icon: '⚙️' }] : []),
   ];
 
   return (
@@ -70,11 +73,15 @@ export default function Sidebar() {
         padding: '1rem',
         borderTop: '1px solid #374151',
       }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <LanguageSwitcher />
+        </div>
         <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
-          Logged in as: <br />
+          {t('common.loggedInAs')} <br />
           <strong style={{ color: 'white' }}>{user?.username}</strong>
         </div>
       </div>
     </aside>
   );
 }
+

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import apiClient from '../../../services/api.service';
+import { useTranslation } from '../../../lib/i18n';
 
 interface TagEvent {
     id: number;
@@ -11,6 +12,7 @@ interface TagEvent {
 }
 
 export default function ScanPage() {
+    const { t } = useTranslation();
     const [tagInput, setTagInput] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -82,7 +84,7 @@ export default function ScanPage() {
 
             setMessage({
                 type: 'success',
-                text: response.data.message || 'Tag registered successfully!',
+                text: response.data.message || t('scan.successMessage'),
             });
 
             // Clear input after success
@@ -103,7 +105,7 @@ export default function ScanPage() {
         } catch (error: any) {
             setMessage({
                 type: 'error',
-                text: error.response?.data?.message || 'Failed to register tag',
+                text: error.response?.data?.message || t('scan.failedMessage'),
             });
         } finally {
             setIsProcessing(false);
@@ -126,7 +128,7 @@ export default function ScanPage() {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#1f2937' }}>
-                    Tag Input
+                    {t('scan.title')}
                 </h1>
             </div>
 
@@ -135,10 +137,10 @@ export default function ScanPage() {
                 <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📱</div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#1f2937', marginBottom: '1rem' }}>
-                        Manual Tag Registration
+                        {t('scan.manualRegistration')}
                     </h2>
                     <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-                        Enter an 8-character RFID tag UID. The tag will be automatically registered when you complete the input.
+                        {t('scan.description')}
                     </p>
 
                     {/* Input Box */}
@@ -149,7 +151,7 @@ export default function ScanPage() {
                             value={tagInput}
                             onChange={handleInputChange}
                             disabled={isProcessing}
-                            placeholder="Enter 8-character UID"
+                            placeholder={t('scan.placeholder')}
                             style={{
                                 width: '100%',
                                 padding: '1rem 1.5rem',
@@ -177,7 +179,7 @@ export default function ScanPage() {
                             fontSize: '0.875rem',
                             fontWeight: '500',
                         }}>
-                            {tagInput.length}/8 characters
+                            {tagInput.length}/8 {t('common.characters')}
                         </div>
                     </div>
 
@@ -198,7 +200,7 @@ export default function ScanPage() {
                     {/* Processing Indicator */}
                     {isProcessing && (
                         <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                            Processing...
+                            {t('scan.processing')}
                         </div>
                     )}
 
@@ -211,12 +213,12 @@ export default function ScanPage() {
                         marginTop: '1.5rem',
                     }}>
                         <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
-                            💡 Tips:
+                            {t('scan.tips')}
                         </h3>
                         <ul style={{ color: '#6b7280', fontSize: '0.875rem', lineHeight: '1.6', paddingLeft: '1.5rem', margin: 0 }}>
-                            <li>Only alphanumeric characters are allowed</li>
-                            <li>Tag will auto-submit when 8 characters are entered</li>
-                            <li>Input will automatically clear after successful registration</li>
+                            <li>{t('scan.tip1')}</li>
+                            <li>{t('scan.tip2')}</li>
+                            <li>{t('scan.tip3')}</li>
                         </ul>
                     </div>
                 </div>
@@ -225,12 +227,12 @@ export default function ScanPage() {
             {/* Recent Events Section */}
             <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', padding: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '1.5rem' }}>
-                    Recent Tag Events
+                    {t('scan.recentEvents')}
                 </h3>
 
                 {recentEvents.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-                        No recent events
+                        {t('scan.noRecentEvents')}
                     </div>
                 ) : (
                     <div style={{ overflowX: 'auto' }}>
@@ -238,13 +240,13 @@ export default function ScanPage() {
                             <thead>
                                 <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
                                     <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280' }}>
-                                        Card UID
+                                        {t('scan.cardUid')}
                                     </th>
                                     <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280' }}>
-                                        Event Time
+                                        {t('scan.eventTime')}
                                     </th>
                                     <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#6b7280' }}>
-                                        Source IP
+                                        {t('scan.sourceIp')}
                                     </th>
                                 </tr>
                             </thead>
@@ -289,3 +291,4 @@ export default function ScanPage() {
         </div>
     );
 }
+
