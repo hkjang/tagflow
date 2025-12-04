@@ -1,16 +1,19 @@
-import { Controller, Post, Get, Body, Query, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards, Req, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateTagEventDto } from '@shared/event';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@shared/user';
 import { WebhooksService } from '../webhooks/webhooks.service';
 
 @Controller('events')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
     private readonly webhooksService: WebhooksService,
-  ) {}
+  ) { }
 
   @Post()
   async createEvent(@Body() dto: CreateTagEventDto, @Req() req: any) {
@@ -27,6 +30,36 @@ export class EventsController {
     } catch (error: any) {
       throw new HttpException(
         error.message || 'Failed to create event',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('manual')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  async createManualTagInput(@Body() dto: CreateTagEventDto, @Req() req: any) {
+    // Validate that card_uid is exactly 8 characters
+    if (!dto.card_uid || dto.card_uid.length !== 8) {
+      throw new BadRequestException('Card UID must be exactly 8 characters');
+    }
+
+    try {
+      const sourceIp = req.ip || req.connection.remoteAddress;
+      const event = await this.eventsService.createEvent(dto, sourceIp);
+
+      // Trigger webhooks asynchronously (don't await)
+      this.webhooksService.triggerWebhooks(event).catch(error => {
+        console.error('Webhook trigger failed:', error);
+      });
+
+      return {
+        success: true,
+        event,
+        message: 'Tag registered successfully',
+      };
+    } catch (error: any) {
+      throw new HttpException(
+        error.message || 'Failed to create tag event',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

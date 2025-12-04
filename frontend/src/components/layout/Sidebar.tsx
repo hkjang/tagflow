@@ -14,6 +14,7 @@ export default function Sidebar() {
     { name: 'Dashboard', href: '/dashboard', icon: '📊' },
     ...(isAdmin ? [{ name: 'User Management', href: '/admin/users', icon: '👥' }] : []),
     { name: 'Tag Management', href: '/tags', icon: '🏷️' },
+    { name: 'Tag Input', href: '/scan', icon: '📱' },
     { name: 'Reports', href: '/reports', icon: '📈' },
     ...(isAdmin ? [{ name: 'Settings', href: '/settings', icon: '⚙️' }] : []),
   ];
@@ -36,14 +37,14 @@ export default function Sidebar() {
       }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>TagFlow</h1>
       </div>
-      
+
       <nav style={{ flex: 1, padding: '1rem' }}>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <li key={item.href} style={{ marginBottom: '0.5rem' }}>
-                <Link 
+                <Link
                   href={item.href}
                   style={{
                     display: 'flex',
