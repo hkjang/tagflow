@@ -51,6 +51,25 @@ export default function ScanPage() {
         }
     };
 
+    // Helper function to get local time in ISO format with timezone offset
+    const getLocalISOString = () => {
+        const now = new Date();
+        const offset = -now.getTimezoneOffset();
+        const sign = offset >= 0 ? '+' : '-';
+        const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+        const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
+
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hour = String(now.getHours()).padStart(2, '0');
+        const minute = String(now.getMinutes()).padStart(2, '0');
+        const second = String(now.getSeconds()).padStart(2, '0');
+        const ms = String(now.getMilliseconds()).padStart(3, '0');
+
+        return `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}${sign}${hours}:${minutes}`;
+    };
+
     const submitTag = async (uid: string) => {
         setIsProcessing(true);
         setMessage(null);
@@ -58,7 +77,7 @@ export default function ScanPage() {
         try {
             const response = await apiClient.post('/events/manual', {
                 card_uid: uid,
-                event_time: new Date().toISOString(), // Send browser timestamp
+                event_time: getLocalISOString(), // Send browser timestamp with timezone
             });
 
             setMessage({
