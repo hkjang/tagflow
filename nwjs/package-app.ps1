@@ -19,7 +19,11 @@ $backendDest = Join-Path $resourcesDir "backend"
 New-Item -ItemType Directory -Path $backendDest | Out-Null
 
 Copy-Item -Path (Join-Path $PSScriptRoot "..\backend\dist") -Destination (Join-Path $backendDest "dist") -Recurse
-Copy-Item -Path (Join-Path $PSScriptRoot "..\backend\node_modules") -Destination (Join-Path $backendDest "node_modules") -Recurse
+# Use root node_modules since this project uses npm workspaces
+# Exclude @tagflow symlinks to avoid circular references
+$sourceModules = Join-Path $PSScriptRoot "..\node_modules"
+$destModules = Join-Path $backendDest "node_modules"
+robocopy $sourceModules $destModules /E /XD "@tagflow" /NFL /NDL /NJH /NJS /nc /ns /np
 
 # Copy frontend
 Write-Host "Copying frontend..." -ForegroundColor Yellow
@@ -33,11 +37,12 @@ if (Test-Path $nwjsPath) {
     Write-Host "Copying to NW.js directory: $nwjsPath" -ForegroundColor Yellow
     
     # Copy all nwjs folder contents to NW.js directory
-    Copy-Item -Path (Join-Path $PSScriptRoot "*") -Destination $nwjsPath -Recurse -Force -Exclude "node_modules","*.md","*.ps1"
+    Copy-Item -Path (Join-Path $PSScriptRoot "*") -Destination $nwjsPath -Recurse -Force -Exclude "node_modules", "*.md", "*.ps1"
     
     Write-Host "`nPackaging complete!" -ForegroundColor Green
     Write-Host "To run: $nwjsPath\nw.exe" -ForegroundColor Cyan
-} else {
+}
+else {
     Write-Host "`nResources prepared in: $resourcesDir" -ForegroundColor Green
     Write-Host "Download NW.js SDK from https://nwjs.io/downloads/" -ForegroundColor Cyan
     Write-Host "Then copy all files from nwjs folder to NW.js directory and run nw.exe" -ForegroundColor Cyan
