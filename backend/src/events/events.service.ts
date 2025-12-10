@@ -18,13 +18,15 @@ export class EventsService {
     const throttleTime = await this.settingsService.getThrottleTime();
     if (throttleTime > 0) {
       const timeWindow = new Date(Date.now() - throttleTime * 60 * 1000).toISOString();
+      // Use datetime() function to normalize both timestamps for proper comparison
+      // This handles timezone differences between stored event_time and calculated timeWindow
       const existingEvent = this.db.queryOne<TagEvent>(
-        'SELECT * FROM tag_events WHERE card_uid = ? AND event_time >= ? LIMIT 1',
+        'SELECT * FROM tag_events WHERE card_uid = ? AND datetime(event_time) >= datetime(?) LIMIT 1',
         [dto.card_uid, timeWindow]
       );
 
       if (existingEvent) {
-        console.log(`Event throttled for card ${dto.card_uid}. Last event: ${existingEvent.event_time}`);
+        console.log(`Event throttled for card ${dto.card_uid}. Last event: ${existingEvent.event_time}, timeWindow: ${timeWindow}`);
         return null;
       }
     }

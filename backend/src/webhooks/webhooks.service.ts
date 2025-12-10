@@ -180,19 +180,22 @@ export class WebhooksService {
   }
 
   // Webhook execution
-  async triggerWebhooks(eventData: any): Promise<void> {
+  async triggerWebhooks(eventData: any): Promise<any[]> {
     const webhooks = await this.getActiveWebhooks();
 
     const promises = webhooks.map(webhook =>
       this.executeWebhook(webhook, eventData).catch(error => {
         console.error(`Webhook ${webhook.id} failed:`, error);
+        return null; // Return null for failed webhooks
       })
     );
 
-    await Promise.all(promises);
+    const results = await Promise.all(promises);
+    // Filter out null results (failed webhooks) and return successful responses
+    return results.filter(result => result !== null);
   }
 
-  async executeWebhook(webhook: Webhook, eventData: any): Promise<void> {
+  async executeWebhook(webhook: Webhook, eventData: any): Promise<any> {
     let payload: any = { ...eventData };
 
     try {
@@ -244,6 +247,9 @@ export class WebhooksService {
 
       // Log success
       this.logWebhookExecution(webhook.id, payload, response.status, JSON.stringify(response.data));
+
+      // Return the response data for use in the frontend
+      return response.data;
     } catch (error: any) {
       // Log failure and add to retry queue
       let errorMessage = error.response?.data || error.message;

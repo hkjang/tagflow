@@ -16,6 +16,7 @@ export default function ScanPage() {
     const [tagInput, setTagInput] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [webhookInfo, setWebhookInfo] = useState<{ emp_name: string; flag: string } | null>(null);
     const [recentEvents, setRecentEvents] = useState<TagEvent[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,6 +76,7 @@ export default function ScanPage() {
     const submitTag = async (uid: string) => {
         setIsProcessing(true);
         setMessage(null);
+        setWebhookInfo(null);
 
         try {
             const response = await apiClient.post('/events/manual', {
@@ -91,6 +93,29 @@ export default function ScanPage() {
                 text: isThrottled ? t('scan.throttledMessage') : t('scan.successMessage'),
             });
 
+            // Check for webhook responses and display employee info
+            if (response.data.webhookResponses && response.data.webhookResponses.length > 0) {
+                for (let webhookRes of response.data.webhookResponses) {
+                    // Parse JSON string if the response is a string
+                    if (typeof webhookRes === 'string') {
+                        try {
+                            webhookRes = JSON.parse(webhookRes);
+                        } catch (e) {
+                            console.warn('Failed to parse webhook response as JSON:', e);
+                            continue;
+                        }
+                    }
+
+                    if (webhookRes && webhookRes.emp_name) {
+                        setWebhookInfo({
+                            emp_name: webhookRes.emp_name,
+                            flag: webhookRes.flag || '',
+                        });
+                        break; // Only show the first webhook with employee info
+                    }
+                }
+            }
+
             // Clear input after success
             setTagInput('');
 
@@ -105,6 +130,7 @@ export default function ScanPage() {
             // Clear success message after 3 seconds
             setTimeout(() => {
                 setMessage(null);
+                setWebhookInfo(null);
             }, 3000);
         } catch (error: any) {
             setMessage({
@@ -198,6 +224,37 @@ export default function ScanPage() {
                             animation: 'fadeIn 0.3s',
                         }}>
                             {message.text}
+                        </div>
+                    )}
+
+                    {/* Webhook Response Info Display */}
+                    {webhookInfo && (
+                        <div style={{
+                            padding: '1rem',
+                            borderRadius: '0.5rem',
+                            backgroundColor: '#dbeafe',
+                            color: '#1e40af',
+                            marginBottom: '1rem',
+                            animation: 'fadeIn 0.3s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '1rem',
+                            fontSize: '1.125rem',
+                            fontWeight: '600',
+                        }}>
+                            <span>👤 {webhookInfo.emp_name}</span>
+                            {webhookInfo.flag && (
+                                <span style={{
+                                    backgroundColor: webhookInfo.flag === '입실' ? '#10b981' : '#f59e0b',
+                                    color: 'white',
+                                    padding: '0.25rem 0.75rem',
+                                    borderRadius: '9999px',
+                                    fontSize: '0.875rem',
+                                }}>
+                                    {webhookInfo.flag}
+                                </span>
+                            )}
                         </div>
                     )}
 

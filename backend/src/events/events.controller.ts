@@ -71,15 +71,20 @@ export class EventsController {
 
       console.log('Event created successfully:', event);
 
-      // Trigger webhooks asynchronously (don't await)
-      this.webhooksService.triggerWebhooks(event).catch(error => {
+      // Trigger webhooks and collect responses
+      let webhookResponses: any[] = [];
+      try {
+        webhookResponses = await this.webhooksService.triggerWebhooks(event);
+        console.log('Webhook responses:', webhookResponses);
+      } catch (error) {
         console.error('Webhook trigger failed:', error);
-      });
+      }
 
       return {
         success: true,
         event,
         message: 'Tag registered successfully',
+        webhookResponses, // Include webhook responses for frontend display
       };
     } catch (error: any) {
       console.error('==== Manual Tag Input Error ====');
