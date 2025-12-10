@@ -63,6 +63,7 @@
         "placeholder": "Enter 8-character UID",
         "processing": "Processing...",
         "successMessage": "Tag registered successfully!",
+        "throttledMessage": "Tag ignored (throttled)",
         "failedMessage": "Failed to register tag",
         "tips": "💡 Tips:",
         "tip1": "Only alphanumeric characters are allowed",

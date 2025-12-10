@@ -82,9 +82,13 @@ export default function ScanPage() {
                 event_time: getLocalISOString(), // Send browser timestamp with timezone
             });
 
+            // Check if tag was throttled (event is null) or use appropriate message
+            const isThrottled = response.data.event === null ||
+                (response.data.message && response.data.message.toLowerCase().includes('throttled'));
+
             setMessage({
                 type: 'success',
-                text: response.data.message || t('scan.successMessage'),
+                text: isThrottled ? t('scan.throttledMessage') : t('scan.successMessage'),
             });
 
             // Clear input after success
