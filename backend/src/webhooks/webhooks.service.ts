@@ -202,10 +202,38 @@ export class WebhooksService {
       // Get mappings for this webhook
       const mappings = await this.getMappingsByWebhookId(webhook.id);
 
-      // Apply field mappings
-      payload = mappings.length > 0
-        ? this.applyMappings(eventData, mappings)
-        : { ...eventData }; // Create a copy to avoid mutating original
+      // If event has purpose_data, flatten it for easier mapping
+      // This allows mapping like "purpose_data.lecture_id" -> "lectureId"
+      if (eventData.purpose_id && eventData.purpose_data) {
+        const enrichedData = {
+          ...eventData,
+          // Add individual purpose_data fields directly at top level (same key names)
+          ...eventData.purpose_data,
+          // Also add with prefix for explicit access (purpose_lecture_id, etc.)
+          ...Object.entries(eventData.purpose_data || {}).reduce((acc, [key, value]) => {
+            acc[`purpose_${key}`] = value;
+            return acc;
+          }, {} as Record<string, any>),
+        };
+
+        // Apply field mappings with enriched data
+        payload = mappings.length > 0
+          ? this.applyMappings(enrichedData, mappings)
+          : { ...enrichedData };
+
+        // Always include purpose_id and purpose_data if they exist
+        if (payload.purpose_id === undefined && eventData.purpose_id) {
+          payload.purpose_id = eventData.purpose_id;
+        }
+        if (payload.purpose_data === undefined && eventData.purpose_data) {
+          payload.purpose_data = eventData.purpose_data;
+        }
+      } else {
+        // Apply field mappings normally
+        payload = mappings.length > 0
+          ? this.applyMappings(eventData, mappings)
+          : { ...eventData }; // Create a copy to avoid mutating original
+      }
 
       // Add system name (with fallback if settings table doesn't exist)
       try {

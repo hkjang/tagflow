@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { userService, User, CreateUserDto } from '../../../../services/user.service';
+import { useTranslation } from '../../../../lib/i18n';
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -53,34 +55,39 @@ export default function UsersPage() {
       setShowModal(false);
       loadUsers();
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to save user');
+      alert(error.response?.data?.message || t('users.saveFailed'));
     }
   };
 
   const handleDelete = async (user: User) => {
     if (user.username === 'admin') {
-      alert('Cannot delete admin user');
+      alert(t('users.cannotDeleteAdmin'));
       return;
     }
-    if (confirm(`Are you sure you want to delete user "${user.username}"?`)) {
+    if (confirm(t('users.confirmDelete').replace('{username}', user.username))) {
       try {
         await userService.deleteUser(user.id);
         loadUsers();
       } catch (error) {
-        alert('Failed to delete user');
+        alert(t('users.deleteFailed'));
       }
     }
   };
 
+  const getRoleLabel = (role: string) => {
+    const roleKey = `users.roles.${role}` as const;
+    return t(roleKey) || role.toUpperCase();
+  };
+
   if (loading) {
-    return <div style={{ padding: '2rem' }}>Loading...</div>;
+    return <div style={{ padding: '2rem' }}>{t('users.loading')}</div>;
   }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#1f2937' }}>
-          User Management
+          {t('users.title')}
         </h1>
         <button
           onClick={handleCreate}
@@ -94,18 +101,31 @@ export default function UsersPage() {
             fontWeight: '500',
           }}
         >
-          Add User
+          {t('users.addUser')}
         </button>
+      </div>
+
+      {/* Guide */}
+      <div style={{
+        backgroundColor: '#eff6ff',
+        border: '1px solid #bfdbfe',
+        borderRadius: '0.5rem',
+        padding: '0.75rem 1rem',
+        marginBottom: '1.5rem',
+        fontSize: '0.875rem',
+        color: '#1e40af',
+      }}>
+        💡 사용자 계정을 관리합니다. 권한에 따라 접근 가능한 메뉴가 달라집니다. admin 계정은 삭제할 수 없습니다.
       </div>
 
       <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ backgroundColor: '#f9fafb' }}>
             <tr>
-              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Username</th>
-              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Role</th>
-              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Created At</th>
-              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Actions</th>
+              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>{t('users.username')}</th>
+              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>{t('users.role')}</th>
+              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>{t('users.createdAt')}</th>
+              <th style={{ padding: '0.75rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>{t('users.actions')}</th>
             </tr>
           </thead>
           <tbody style={{ borderTop: '1px solid #e5e7eb' }}>
@@ -121,7 +141,7 @@ export default function UsersPage() {
                     fontSize: '0.75rem',
                     fontWeight: '500'
                   }}>
-                    {user.role.toUpperCase()}
+                    {getRoleLabel(user.role)}
                   </span>
                 </td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
@@ -132,14 +152,14 @@ export default function UsersPage() {
                     onClick={() => handleEdit(user)}
                     style={{ color: '#2563eb', border: 'none', background: 'none', cursor: 'pointer', marginRight: '1rem' }}
                   >
-                    Edit
+                    {t('users.edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(user)}
                     style={{ color: '#dc2626', border: 'none', background: 'none', cursor: 'pointer' }}
                     disabled={user.username === 'admin'}
                   >
-                    Delete
+                    {t('users.delete')}
                   </button>
                 </td>
               </tr>
@@ -170,12 +190,12 @@ export default function UsersPage() {
             width: '90%',
           }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>
-              {editingUser ? 'Edit User' : 'Create User'}
+              {editingUser ? t('users.editUser') : t('users.createUser')}
             </h2>
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Username
+                  {t('users.username')}
                 </label>
                 <input
                   type="text"
@@ -192,7 +212,7 @@ export default function UsersPage() {
               </div>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Password {editingUser && '(leave empty to keep current)'}
+                  {t('users.password')} {editingUser && <span style={{ color: '#6b7280', fontWeight: 'normal' }}>{t('users.passwordHint')}</span>}
                 </label>
                 <input
                   type="password"
@@ -209,7 +229,7 @@ export default function UsersPage() {
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Role
+                  {t('users.role')}
                 </label>
                 <select
                   value={formData.role}
@@ -221,8 +241,8 @@ export default function UsersPage() {
                     borderRadius: '0.375rem',
                   }}
                 >
-                  <option value="operator">Operator</option>
-                  <option value="admin">Admin</option>
+                  <option value="operator">{t('users.roles.operator')}</option>
+                  <option value="admin">{t('users.roles.admin')}</option>
                 </select>
               </div>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
@@ -237,7 +257,7 @@ export default function UsersPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  Cancel
+                  {t('users.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -250,7 +270,7 @@ export default function UsersPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  {editingUser ? 'Update' : 'Create'}
+                  {editingUser ? t('users.update') : t('users.create')}
                 </button>
               </div>
             </form>

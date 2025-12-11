@@ -34,8 +34,18 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.db = new this.SQL.Database();
     }
 
-    // Enable WAL mode for better concurrency (note: sql.js doesn't support WAL, but we keep for compatibility)
     console.log(`Database connected: ${this.dbPath}`);
+
+    // Run migrations and seeds after database is initialized
+    try {
+      await this.runMigrations();
+      console.log('✅ Database migrations completed');
+
+      await this.runSeeds();
+      console.log('✅ Database seeds completed');
+    } catch (error: any) {
+      console.error('❌ Migration/Seed error:', error.message);
+    }
   }
 
   async onModuleDestroy() {
@@ -160,10 +170,26 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    * Run migrations
    */
   async runMigrations() {
-    const migrationsDir = join(__dirname, 'migrations');
+    // Try multiple possible locations for migrations
+    const possiblePaths = [
+      join(__dirname, 'migrations'),
+      join(__dirname, 'database', 'migrations'),
+      join(process.cwd(), 'dist', 'database', 'migrations'),
+      join(process.cwd(), 'src', 'database', 'migrations'),
+    ];
 
-    if (!fs.existsSync(migrationsDir)) {
-      console.log('No migrations directory found');
+    let migrationsDir: string | null = null;
+    for (const p of possiblePaths) {
+      console.log(`Checking migrations path: ${p}`);
+      if (fs.existsSync(p)) {
+        migrationsDir = p;
+        console.log(`Found migrations at: ${p}`);
+        break;
+      }
+    }
+
+    if (!migrationsDir) {
+      console.log('No migrations directory found in any location');
       return;
     }
 
@@ -195,9 +221,24 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    * Run seed data
    */
   async runSeeds() {
-    const seedsDir = join(__dirname, 'seeds');
+    // Try multiple possible locations for seeds
+    const possiblePaths = [
+      join(__dirname, 'seeds'),
+      join(__dirname, 'database', 'seeds'),
+      join(process.cwd(), 'dist', 'database', 'seeds'),
+      join(process.cwd(), 'src', 'database', 'seeds'),
+    ];
 
-    if (!fs.existsSync(seedsDir)) {
+    let seedsDir: string | null = null;
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        seedsDir = p;
+        console.log(`Found seeds at: ${p}`);
+        break;
+      }
+    }
+
+    if (!seedsDir) {
       console.log('No seeds directory found');
       return;
     }

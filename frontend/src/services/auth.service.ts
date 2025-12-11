@@ -29,10 +29,14 @@ export const authService = {
   },
 
   /**
-   * Logout (client-side only - clears tokens)
+   * Logout (client-side only - clears tokens and session data)
    */
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+
+    // Clear scan page purpose selection data
+    sessionStorage.removeItem('tagflow_scan_purpose_id');
+    sessionStorage.removeItem('tagflow_scan_purpose_data');
   },
 };

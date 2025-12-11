@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { DatabaseService } from './database/database.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,22 +19,11 @@ async function bootstrap() {
     }),
   );
 
-  // Run migrations on startup
-  const dbService = app.get(DatabaseService);
-  try {
-    await dbService.runMigrations();
-    console.log('??Database migrations completed');
-    
-    // Run seeds on startup to ensure admin user exists
-    await dbService.runSeeds();
-    console.log('??Database seeds completed');
-  } catch (error: any) {
-    console.error('??Migration/Seed error:', error);
-  }
+  // Migrations and seeds now run automatically in DatabaseService.onModuleInit
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  console.log(`?? Backend server running on http://localhost:${port}`);
+  console.log(`🚀 Backend server running on http://localhost:${port}`);
 }
 
 bootstrap();

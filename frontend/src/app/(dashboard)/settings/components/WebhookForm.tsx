@@ -248,24 +248,55 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ webhook, onSubmit, onC
                                 </div>
                             )}
 
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <select
-                                    value={newMapping.from_key}
-                                    onChange={(e) => setNewMapping({ ...newMapping, from_key: e.target.value })}
-                                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
-                                >
-                                    <option value="" disabled>Select From Key</option>
-                                    <option value="card_uid">card_uid</option>
-                                    <option value="event_time">event_time</option>
-                                    <option value="source_ip">source_ip</option>
-                                    <option value="system_name">system_name</option>
-                                </select>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
+                                    <input
+                                        type="text"
+                                        list="fromKeyOptions"
+                                        placeholder="From Key 선택 또는 직접 입력"
+                                        value={newMapping.from_key}
+                                        onChange={(e) => setNewMapping({ ...newMapping, from_key: e.target.value })}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.5rem',
+                                            border: '1px solid #d1d5db',
+                                            borderRadius: '0.375rem',
+                                            fontSize: '0.875rem',
+                                        }}
+                                    />
+                                    <datalist id="fromKeyOptions">
+                                        <optgroup label="기본 필드">
+                                            <option value="card_uid" />
+                                            <option value="event_time" />
+                                            <option value="source_ip" />
+                                            <option value="system_name" />
+                                        </optgroup>
+                                        <optgroup label="목적 관련 필드">
+                                            <option value="purpose_id" />
+                                            <option value="purpose_data" />
+                                        </optgroup>
+                                        <optgroup label="목적 데이터 필드">
+                                            <option value="purpose_data.lecture_id" />
+                                            <option value="purpose_data.room" />
+                                            <option value="purpose_data.subject" />
+                                            <option value="purpose_data.facility_id" />
+                                            <option value="purpose_data.edu_id" />
+                                        </optgroup>
+                                        <optgroup label="평탄화된 필드">
+                                            <option value="lecture_id" />
+                                            <option value="room" />
+                                            <option value="subject" />
+                                            <option value="facility_id" />
+                                            <option value="edu_id" />
+                                        </optgroup>
+                                    </datalist>
+                                </div>
                                 <input
                                     type="text"
                                     placeholder="To Key (e.g. tag_id)"
                                     value={newMapping.to_key}
                                     onChange={(e) => setNewMapping({ ...newMapping, to_key: e.target.value })}
-                                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
+                                    style={{ flex: 1, minWidth: '150px', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
                                 />
                                 <button
                                     type="button"
@@ -278,12 +309,16 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ webhook, onSubmit, onC
                                         border: 'none',
                                         borderRadius: '0.375rem',
                                         cursor: 'pointer',
-                                        opacity: (!newMapping.from_key || !newMapping.to_key) ? 0.5 : 1
+                                        opacity: (!newMapping.from_key || !newMapping.to_key) ? 0.5 : 1,
+                                        whiteSpace: 'nowrap',
                                     }}
                                 >
                                     Add
                                 </button>
                             </div>
+                            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+                                💡 목록에서 선택하거나 직접 입력할 수 있습니다. (예: edu_id, custom_field)
+                            </p>
                         </div>
                     )}
                     {!webhook && (

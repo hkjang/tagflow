@@ -13,7 +13,8 @@
         "no": "No",
         "to": "to",
         "loggedInAs": "Logged in as:",
-        "characters": "characters"
+        "characters": "characters",
+        "signOut": "Sign out"
     },
     "sidebar": {
         "dashboard": "Dashboard",
@@ -21,7 +22,8 @@
         "tagManagement": "Tag Management",
         "tagInput": "Tag Input",
         "reports": "Reports",
-        "settings": "Settings"
+        "settings": "Settings",
+        "userGuide": "User Guide"
     },
     "login": {
         "title": "TagFlow",
@@ -210,5 +212,44 @@
             "title": "Need Help?",
             "description": "Contact your system administrator or refer to the documentation."
         }
+    },
+    "users": {
+        "title": "User Management",
+        "addUser": "Add User",
+        "editUser": "Edit User",
+        "createUser": "Create User",
+        "username": "Username",
+        "password": "Password",
+        "passwordHint": "(leave empty to keep current)",
+        "role": "Role",
+        "createdAt": "Created At",
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "update": "Update",
+        "create": "Create",
+        "loading": "Loading...",
+        "confirmDelete": "Are you sure you want to delete user \"{username}\"?",
+        "cannotDeleteAdmin": "Cannot delete admin user",
+        "saveFailed": "Failed to save user",
+        "deleteFailed": "Failed to delete user",
+        "roles": {
+            "admin": "Admin",
+            "operator": "Operator",
+            "viewer": "Viewer"
+        }
+    },
+    "tags": {
+        "title": "Tag Management",
+        "autoRegistration": "RFID Tags Auto-Registration",
+        "description": "RFID tags are automatically registered when they are scanned by an RFID reader. Each tag event is captured and processed by the system, creating a record in the database.",
+        "howItWorks": "How it works:",
+        "step1": "RFID reader detects a tag",
+        "step2": "Tag UID is sent to the backend via HTTP request",
+        "step3": "System creates a tag event record",
+        "step4": "Configured webhooks are triggered to notify external systems",
+        "viewReports": "To view tag events and statistics, visit the Reports page.",
+        "reports": "Reports"
     }
 }

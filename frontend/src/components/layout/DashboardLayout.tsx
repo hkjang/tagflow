@@ -3,6 +3,7 @@
 import Sidebar from './Sidebar';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '../../lib/i18n';
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
 }) {
   const { logout } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -20,7 +22,7 @@ export default function DashboardLayout({
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
       <Sidebar />
-      
+
       <div style={{ marginLeft: '250px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <header style={{
           backgroundColor: 'white',
@@ -43,7 +45,7 @@ export default function DashboardLayout({
               fontWeight: '500',
             }}
           >
-            Sign out
+            {t('common.signOut')}
           </button>
         </header>
 

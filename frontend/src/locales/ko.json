@@ -13,7 +13,8 @@
         "no": "아니오",
         "to": "~",
         "loggedInAs": "로그인:",
-        "characters": "자"
+        "characters": "자",
+        "signOut": "로그아웃"
     },
     "sidebar": {
         "dashboard": "대시보드",
@@ -21,7 +22,8 @@
         "tagManagement": "태그 관리",
         "tagInput": "태그 입력",
         "reports": "리포트",
-        "settings": "설정"
+        "settings": "설정",
+        "userGuide": "사용자 가이드"
     },
     "login": {
         "title": "TagFlow",
@@ -210,5 +212,98 @@
             "title": "도움이 필요하신가요?",
             "description": "시스템 관리자에게 문의하거나 문서를 참조하세요."
         }
+    },
+    "purposes": {
+        "title": "태그 목적 관리",
+        "create": "새 목적 추가",
+        "list": "목적 목록",
+        "detail": "목적 상세",
+        "types": {
+            "ATTENDANCE": "교육 출결",
+            "ACCESS": "출입 관리",
+            "FACILITY": "시설 이용",
+            "RESERVATION": "예약 관리"
+        },
+        "fields": {
+            "title": "필드 설정",
+            "add": "필드 추가",
+            "name": "필드명",
+            "label": "라벨",
+            "type": "타입",
+            "required": "필수",
+            "defaultValue": "기본값"
+        },
+        "webhooks": {
+            "title": "웹훅 연결",
+            "add": "웹훅 연결",
+            "mapping": "필드 매핑"
+        },
+        "rules": {
+            "title": "규칙 설정",
+            "add": "규칙 추가",
+            "types": {
+                "TIME_WINDOW": "시간대 규칙",
+                "USER_GROUP": "사용자 그룹",
+                "DUPLICATE_POLICY": "중복 정책"
+            }
+        },
+        "followups": {
+            "title": "후속 처리",
+            "add": "후속 처리 추가",
+            "types": {
+                "NOTIFICATION": "알림",
+                "APPROVAL": "승인 요청",
+                "API_CALL": "외부 API 호출"
+            }
+        },
+        "stats": {
+            "today": "오늘",
+            "thisWeek": "이번 주",
+            "thisMonth": "이번 달",
+            "total": "전체"
+        },
+        "selectPurpose": "목적 선택",
+        "noPurpose": "목적 없음",
+        "active": "활성",
+        "inactive": "비활성"
+    },
+    "users": {
+        "title": "사용자 관리",
+        "addUser": "사용자 추가",
+        "editUser": "사용자 수정",
+        "createUser": "사용자 생성",
+        "username": "사용자명",
+        "password": "비밀번호",
+        "passwordHint": "(비워두면 현재 비밀번호 유지)",
+        "role": "권한",
+        "createdAt": "생성일",
+        "actions": "작업",
+        "edit": "수정",
+        "delete": "삭제",
+        "cancel": "취소",
+        "update": "수정",
+        "create": "생성",
+        "loading": "로딩중...",
+        "confirmDelete": "정말로 \"{username}\" 사용자를 삭제하시겠습니까?",
+        "cannotDeleteAdmin": "admin 사용자는 삭제할 수 없습니다",
+        "saveFailed": "사용자 저장에 실패했습니다",
+        "deleteFailed": "사용자 삭제에 실패했습니다",
+        "roles": {
+            "admin": "관리자",
+            "operator": "운영자",
+            "viewer": "조회자"
+        }
+    },
+    "tags": {
+        "title": "태그 관리",
+        "autoRegistration": "RFID 태그 자동 등록",
+        "description": "RFID 태그는 리더기에 스캔되면 자동으로 등록됩니다. 각 태그 이벤트는 시스템에 의해 캡처되고 처리되어 데이터베이스에 기록됩니다.",
+        "howItWorks": "작동 방식:",
+        "step1": "RFID 리더기가 태그를 감지합니다",
+        "step2": "태그 UID가 HTTP 요청을 통해 백엔드로 전송됩니다",
+        "step3": "시스템이 태그 이벤트 레코드를 생성합니다",
+        "step4": "설정된 웹훅이 외부 시스템에 알림을 전송합니다",
+        "viewReports": "태그 이벤트와 통계를 확인하려면 리포트 페이지를 방문하세요.",
+        "reports": "리포트"
     }
 }

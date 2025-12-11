@@ -37,19 +37,20 @@ export class EventsService {
 
     while (retries > 0) {
       try {
-        console.log('Creating event with:', { card_uid: dto.card_uid, ip, event_time: dto.event_time });
+        console.log('Creating event with:', { card_uid: dto.card_uid, ip, event_time: dto.event_time, purpose_id: dto.purpose_id });
 
         let sql: string;
         let params: any[];
+        const purposeData = dto.purpose_data ? JSON.stringify(dto.purpose_data) : null;
 
         if (dto.event_time) {
           // Use client-provided timestamp
-          sql = 'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag) VALUES (?, ?, ?, 0)';
-          params = [dto.card_uid, dto.event_time, ip];
+          sql = 'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag, purpose_id, purpose_data) VALUES (?, ?, ?, 0, ?, ?)';
+          params = [dto.card_uid, dto.event_time, ip, dto.purpose_id || null, purposeData];
         } else {
           // Fallback to server timestamp for backward compatibility
-          sql = 'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag) VALUES (?, CURRENT_TIMESTAMP, ?, 0)';
-          params = [dto.card_uid, ip];
+          sql = 'INSERT INTO tag_events (card_uid, event_time, source_ip, processed_flag, purpose_id, purpose_data) VALUES (?, CURRENT_TIMESTAMP, ?, 0, ?, ?)';
+          params = [dto.card_uid, ip, dto.purpose_id || null, purposeData];
         }
 
         const result = this.db.exec(sql, params);
@@ -57,7 +58,7 @@ export class EventsService {
         console.log('Insert result:', result);
         console.log('Last insert rowid:', result.lastInsertRowid);
 
-        const event = this.db.queryOne<TagEvent>(
+        const event = this.db.queryOne<any>(
           'SELECT * FROM tag_events WHERE id = ?',
           [result.lastInsertRowid],
         );
@@ -67,16 +68,16 @@ export class EventsService {
         if (!event) {
           console.error('Failed to retrieve event after insert. Trying to get latest event...');
           // Fallback: try to get the most recent event
-          const latestEvent = this.db.queryOne<TagEvent>(
+          const latestEvent = this.db.queryOne<any>(
             'SELECT * FROM tag_events ORDER BY id DESC LIMIT 1'
           );
           console.log('Latest event:', latestEvent);
           if (latestEvent) {
-            return latestEvent;
+            return this.parseEvent(latestEvent);
           }
           throw new Error('Failed to create event');
         }
-        return event;
+        return this.parseEvent(event);
       } catch (error: any) {
         console.error('Event creation error:', error);
         lastError = error;
@@ -96,6 +97,7 @@ export class EventsService {
     startDate?: string;
     endDate?: string;
     card_uid?: string;
+    purpose_id?: number;
     page?: number;
     limit?: number;
   }): Promise<{ data: TagEvent[]; total: number }> {
@@ -121,6 +123,11 @@ export class EventsService {
       params.push(`%${filter.card_uid}%`);
     }
 
+    if (filter?.purpose_id) {
+      sql += ' AND purpose_id = ?';
+      params.push(filter.purpose_id);
+    }
+
     // Get total count
     const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as count');
     const countResult = this.db.queryOne<{ count: number }>(countSql, params);
@@ -130,16 +137,25 @@ export class EventsService {
     sql += ' ORDER BY event_time DESC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
-    const data = this.db.query<TagEvent>(sql, params);
+    const data = this.db.query<any>(sql, params);
 
-    return { data, total };
+    return { data: data.map(this.parseEvent), total };
   }
 
   async getEventById(id: number): Promise<TagEvent | undefined> {
-    return this.db.queryOne<TagEvent>('SELECT * FROM tag_events WHERE id = ?', [id]);
+    const event = this.db.queryOne<any>('SELECT * FROM tag_events WHERE id = ?', [id]);
+    return event ? this.parseEvent(event) : undefined;
   }
 
   async markAsProcessed(id: number): Promise<void> {
     this.db.exec('UPDATE tag_events SET processed_flag = 1 WHERE id = ?', [id]);
+  }
+
+  private parseEvent(event: any): TagEvent {
+    return {
+      ...event,
+      processed_flag: !!event.processed_flag,
+      purpose_data: event.purpose_data ? JSON.parse(event.purpose_data) : undefined,
+    };
   }
 }

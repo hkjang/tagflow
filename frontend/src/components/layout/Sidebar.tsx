@@ -16,10 +16,12 @@ export default function Sidebar() {
   const menuItems = [
     { name: t('sidebar.dashboard'), href: '/dashboard', icon: '📊' },
     ...(isAdmin ? [{ name: t('sidebar.userManagement'), href: '/admin/users', icon: '👥' }] : []),
+    ...(isAdmin ? [{ name: t('purposes.title'), href: '/admin/purposes', icon: '🎯' }] : []),
     { name: t('sidebar.tagManagement'), href: '/tags', icon: '🏷️' },
     { name: t('sidebar.tagInput'), href: '/scan', icon: '📱' },
     { name: t('sidebar.reports'), href: '/reports', icon: '📈' },
     ...(isAdmin ? [{ name: t('sidebar.settings'), href: '/settings', icon: '⚙️' }] : []),
+    { name: t('sidebar.userGuide') || '사용자 가이드', href: '/guide', icon: '📖' },
   ];
 
   return (
