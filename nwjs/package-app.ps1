@@ -6,6 +6,8 @@ param(
 
 Write-Host "Packaging TagFlow with NW.js..." -ForegroundColor Green
 
+Write-Host "Before packaging, please run npm run build in the project root folder." -ForegroundColor Red
+
 # Create resources directory structure
 $resourcesDir = Join-Path $PSScriptRoot "resources"
 if (Test-Path $resourcesDir) {
