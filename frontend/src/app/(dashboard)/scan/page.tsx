@@ -175,6 +175,15 @@ export default function ScanPage() {
         return true;
     };
 
+    // Mask card UID: show only first and last character, replace middle with asterisks
+    const maskCardUid = (uid: string): string => {
+        if (!uid || uid.length <= 2) return uid;
+        const firstChar = uid.charAt(0);
+        const lastChar = uid.charAt(uid.length - 1);
+        const middleMask = '*'.repeat(uid.length - 2);
+        return `${firstChar}${middleMask}${lastChar}`;
+    };
+
     // Korean keyboard to English mapping (for when Korean input is accidentally used)
     const koreanToEnglish: Record<string, string> = {
         'ㅂ': 'q', 'ㅈ': 'w', 'ㄷ': 'e', 'ㄱ': 'r', 'ㅅ': 't', 'ㅛ': 'y', 'ㅕ': 'u', 'ㅑ': 'i', 'ㅐ': 'o', 'ㅔ': 'p',
@@ -742,7 +751,7 @@ export default function ScanPage() {
                                                 fontWeight: index === 0 ? '600' : '400',
                                                 color: index === 0 ? '#854d0e' : '#374151',
                                             }}>
-                                                {event.card_uid}
+                                                {maskCardUid(event.card_uid)}
                                             </td>
                                             <td style={{
                                                 padding: '0.5rem',
