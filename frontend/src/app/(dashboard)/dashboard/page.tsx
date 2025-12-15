@@ -105,6 +105,15 @@ export default function DashboardPage() {
     return Math.max(...eventStats.eventsByDay.map(d => d.count), 1);
   };
 
+  // Mask card UID: show only first and last character, replace middle with asterisks
+  const maskCardUid = (uid: string): string => {
+    if (!uid || uid.length <= 2) return uid;
+    const firstChar = uid.charAt(0);
+    const lastChar = uid.charAt(uid.length - 1);
+    const middleMask = '*'.repeat(uid.length - 2);
+    return `${firstChar}${middleMask}${lastChar}`;
+  };
+
   if (loading) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
@@ -309,7 +318,7 @@ export default function DashboardPage() {
                   {index + 1}
                 </div>
                 <div style={{ flex: 1, fontFamily: 'monospace', fontSize: '0.875rem', color: '#374151' }}>
-                  {card.card_uid}
+                  {maskCardUid(card.card_uid)}
                 </div>
                 <div style={{ fontWeight: '600', color: '#667eea' }}>
                   {card.count}{t('dashboard.times')}
@@ -351,7 +360,7 @@ export default function DashboardPage() {
                   backgroundColor: '#10b981',
                 }} />
                 <div style={{ flex: 1, fontFamily: 'monospace', fontSize: '0.875rem', color: '#374151' }}>
-                  {event.card_uid}
+                  {maskCardUid(event.card_uid)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
                   {formatDateTime(event.event_time)}

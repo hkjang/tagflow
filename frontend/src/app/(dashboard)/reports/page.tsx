@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { reportsService, EventStatistics, WebhookStatistics, TagEvent } from '../../../services/reports.service';
+import { reportsService, EventStatistics, WebhookStatistics } from '../../../services/reports.service';
 import { useTranslation } from '../../../lib/i18n';
 
 type DateRange = '7days' | '30days' | '90days' | 'custom';
@@ -15,7 +15,6 @@ export default function ReportsPage() {
   const [dateRange, setDateRange] = useState<DateRange>('30days');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-  const [exporting, setExporting] = useState(false);
 
   const getDateRange = () => {
     const now = new Date();
@@ -72,44 +71,18 @@ export default function ReportsPage() {
     fetchData();
   }, [dateRange, customStartDate, customEndDate]);
 
-  const handleExport = async () => {
-    try {
-      setExporting(true);
-      const { startDate, endDate } = getDateRange();
-      const events = await reportsService.exportEvents(startDate, endDate);
-
-      // Convert to CSV
-      const headers = ['ID', 'Card UID', 'Event Time', 'Device ID', 'Is Manual', 'Created At'];
-      const rows = events.map(e => [
-        e.id,
-        e.card_uid,
-        e.event_time,
-        e.device_id || '',
-        e.is_manual ? 'Yes' : 'No',
-        e.created_at,
-      ]);
-
-      const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `tag-events-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err: any) {
-      console.error('Failed to export:', err);
-      alert('Failed to export events');
-    } finally {
-      setExporting(false);
-    }
-  };
-
   const maxCount = eventStats?.eventsByDay?.length
     ? Math.max(...eventStats.eventsByDay.map(d => d.count), 1)
     : 1;
+
+  // Mask card UID: show only first and last character, replace middle with asterisks
+  const maskCardUid = (uid: string): string => {
+    if (!uid || uid.length <= 2) return uid;
+    const firstChar = uid.charAt(0);
+    const lastChar = uid.charAt(uid.length - 1);
+    const middleMask = '*'.repeat(uid.length - 2);
+    return `${firstChar}${middleMask}${lastChar}`;
+  };
 
   const styles = {
     container: { padding: '0' },
@@ -175,21 +148,26 @@ export default function ReportsPage() {
       marginBottom: '1.5rem',
     },
     sectionTitle: { fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' },
-    chartContainer: { height: '250px', position: 'relative' as const },
+    chartContainer: {
+      height: '250px',
+      position: 'relative' as const,
+      paddingBottom: '40px',
+    },
     barContainer: {
       display: 'flex',
       alignItems: 'flex-end',
-      justifyContent: 'space-between',
-      height: '100%',
-      gap: '4px',
-      padding: '0 0.5rem',
+      justifyContent: 'space-around',
+      height: '200px',
+      gap: '8px',
+      padding: '0 1rem',
     },
     barWrapper: {
       display: 'flex',
       flexDirection: 'column' as const,
       alignItems: 'center',
+      justifyContent: 'flex-end',
       flex: 1,
-      maxWidth: '40px',
+      maxWidth: '50px',
       height: '100%',
     },
     bar: {
@@ -197,14 +175,13 @@ export default function ReportsPage() {
       backgroundColor: '#3b82f6',
       borderRadius: '4px 4px 0 0',
       transition: 'height 0.3s ease',
-      minHeight: '2px',
+      minHeight: '4px',
     },
     barLabel: {
-      fontSize: '0.625rem',
+      fontSize: '0.65rem',
       color: '#6b7280',
-      marginTop: '0.25rem',
-      transform: 'rotate(-45deg)',
-      transformOrigin: 'top left',
+      marginTop: '8px',
+      textAlign: 'center' as const,
       whiteSpace: 'nowrap' as const,
     },
     table: {
@@ -337,28 +314,6 @@ export default function ReportsPage() {
               />
             </>
           )}
-
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            style={{ ...styles.exportBtn, opacity: exporting ? 0.7 : 1 }}
-          >
-            {exporting ? (
-              <>
-                <span style={{ ...styles.spinner, width: '16px', height: '16px', borderWidth: '2px' }}></span>
-                {t('reports.exporting')}
-              </>
-            ) : (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                {t('reports.exportCsv')}
-              </>
-            )}
-          </button>
         </div>
       </div>
 
@@ -411,14 +366,17 @@ export default function ReportsPage() {
               <div style={styles.barContainer}>
                 {eventStats.eventsByDay.slice().reverse().map((day, idx) => (
                   <div key={idx} style={styles.barWrapper} title={`${day.date}: ${day.count} events`}>
+                    <div style={{ fontSize: '0.6rem', color: '#374151', marginBottom: '4px', fontWeight: '500' }}>
+                      {day.count}
+                    </div>
                     <div
                       style={{
                         ...styles.bar,
-                        height: `${Math.max((day.count / maxCount) * 200, 2)}px`,
+                        height: `${Math.max((day.count / maxCount) * 100, 2)}%`,
                       }}
                     />
                     <span style={styles.barLabel}>
-                      {new Date(day.date).toLocaleDateString('ko', { month: 'short', day: 'numeric' })}
+                      {new Date(day.date).toLocaleDateString('ko', { month: 'numeric', day: 'numeric' })}
                     </span>
                   </div>
                 ))}
@@ -445,7 +403,7 @@ export default function ReportsPage() {
                   <tr key={idx}>
                     <td style={styles.td}>
                       <code style={{ backgroundColor: '#f3f4f6', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8125rem' }}>
-                        {card.card_uid}
+                        {maskCardUid(card.card_uid)}
                       </code>
                     </td>
                     <td style={{ ...styles.td, textAlign: 'right', fontWeight: '500' }}>
